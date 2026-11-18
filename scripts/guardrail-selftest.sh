@@ -76,6 +76,11 @@ content_cases() {
     "$ROOT" "$check" "dev-only-enabled-outside-dev-profile"
 
   if git -C "$ROOT" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    local big="backend/src/test/resources/content-dev-fixture/aiBadBig.json"
+    expect_caught "real-sized dev-only file hidden among test fixtures" "$ROOT/$big" \
+      "{ \"license\": { \"kind\": \"dev-only\" }, \"padding\": \"$(printf 'x%.0s' $(seq 1 5000))\" }" \
+      "$ROOT" "git add -N $big && $check; s=\$?; git rm -q --cached $big; exit \$s" \
+      "dev-only-content-tracked"
     local f="docs/aiBadDevOnly.json"
     expect_caught "dev-only file committed to Git" "$ROOT/$f" \
       '{ "license": { "kind": "dev-only" } }' \

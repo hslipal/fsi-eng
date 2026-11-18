@@ -18,6 +18,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TRACKS = ['business', 'it', 'ielts'];
 const errors = [];
 
+// The only place a tracked file may say "dev-only": tiny fake fixtures for backend tests.
+const TEST_FIXTURE = 'backend/src/test/resources/content-dev-fixture/';
+const MAX_FIXTURE_BYTES = 4096;
+
 function fail(file, code, hint) {
   errors.push(`${relative(ROOT, file)}: ${code} — ${hint}`);
 }
@@ -201,6 +205,9 @@ function checkNoDevOnlyTracked() {
   }
   for (const name of tracked) {
     const path = join(ROOT, name);
+    if (name.startsWith(TEST_FIXTURE) && statSync(path).size <= MAX_FIXTURE_BYTES) {
+      continue; // fake dev-only data for backend tests; real material would exceed the size cap
+    }
     const inDevFolder = name.startsWith('content-dev/');
     const jsonWithDevOnly =
       name.endsWith('.json') &&
