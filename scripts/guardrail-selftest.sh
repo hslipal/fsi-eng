@@ -22,6 +22,7 @@ trap cleanup EXIT
 # expect_caught <name> <file> <content> <workdir> <command> <expected-regex>
 expect_caught() {
   local name="$1" file="$2" content="$3" dir="$4" cmd="$5" expected="$6" out
+  mkdir -p "$(dirname "$file")"
   printf '%s\n' "$content" > "$file"
   CREATED+=("$file")
   out="$(cd "$dir" && bash -c "$cmd" 2>&1)"
