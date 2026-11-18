@@ -46,8 +46,15 @@ against `content-policy.json`; the backend imports `content/<track>/*.json` into
   - `dialogue`: `lines` (speaker + text), for listening and memorising; not graded
   - `substitution` | `transformation` | `expansion` | `translation` | `response`:
     `instruction`, optional `model`, `items` (`cue` + every accepted `answers`), typed answers
+  - `speaking`: `instruction`, `items` with `cue` (the question), `part` (1-3), optional
+    `audio` (sample answer, path relative to the content root, e.g.
+    `ielts/speaking-audio/q1.mp3`) and `seconds`; not graded
   - `reading`: `instruction`, `passage`, `items` with `options` (e.g. `TRUE`/`FALSE`/`NOT GIVEN`
     or A-D); every answer must be one of the options, and choices are graded strictly
 
 Copyrighted material used only for development (Cambridge IELTS past papers, BEC, commercial
-textbooks) goes in `content-dev/`, which is git-ignored and never loaded in production.
+textbooks, audio of unknown origin) goes in `content-dev/<track>/`, same format with
+`"license": { "kind": "dev-only" }`. It is git-ignored and loaded only with the backend's `dev`
+profile. `tools/build_speaking_manifest.py content-dev/ielts` turns a folder of speaking
+recordings (`content-dev/ielts/speaking-audio/*.mp3`, named after the question) into
+`content-dev/ielts/speaking-questions.json`.

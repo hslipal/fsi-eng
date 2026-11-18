@@ -123,13 +123,24 @@ function drillProblem(drill) {
     const bad = lines.some((line) => !isText(line?.speaker) || !isText(line?.text));
     return bad ? 'every dialogue line needs speaker and text' : null;
   }
+  if (drill?.type === 'speaking') {
+    if (!isText(drill.instruction)) return 'a speaking drill needs an instruction';
+    if (!Array.isArray(drill.items) || drill.items.length === 0) return 'a speaking drill needs items';
+    const bad = drill.items.find(
+      (it) =>
+        !isText(it?.cue) ||
+        ![1, 2, 3].includes(it.part) ||
+        (it.audio !== undefined && (!isText(it.audio) || it.audio.split(/[\\/]/).includes('..'))),
+    );
+    return bad === undefined ? null : 'every speaking item needs a cue, part 1-3 and a safe audio path';
+  }
   if (drill?.type === 'reading') {
     if (!isText(drill.instruction)) return 'a reading drill needs an instruction';
     if (!isText(drill.passage)) return 'a reading drill needs a passage';
     return itemsProblem(drill.items, true);
   }
   if (!DRILL_TYPES.includes(drill?.type)) {
-    return `type must be dialogue, reading or ${DRILL_TYPES.join(', ')}`;
+    return `type must be dialogue, reading, speaking or ${DRILL_TYPES.join(', ')}`;
   }
   if (!isText(drill.instruction)) return `a ${drill.type} drill needs an instruction`;
   return itemsProblem(drill.items, false);
@@ -201,10 +212,29 @@ function checkNoDevOnlyTracked() {
   }
 }
 
+function checkDevSwitch() {
+  const resources = join(ROOT, 'backend', 'src', 'main', 'resources');
+  if (!existsSync(resources)) return;
+  for (const name of readdirSync(resources)) {
+    if (!/^application.*\.(properties|ya?ml)$/.test(name) || name === 'application-dev.properties') {
+      continue;
+    }
+    const text = readFileSync(join(resources, name), 'utf8');
+    if (/include-dev-only\s*[=:]\s*true/.test(text)) {
+      fail(
+        join(resources, name),
+        'dev-only-enabled-outside-dev-profile',
+        'fsi.content.include-dev-only=true belongs only in application-dev.properties',
+      );
+    }
+  }
+}
+
 const files = listJson(CONTENT_DIR);
 files.forEach(checkContentFile);
 checkGitIgnore();
 checkNoDevOnlyTracked();
+checkDevSwitch();
 
 if (errors.length > 0) {
   for (const line of errors) console.error(`✖ ${line}`);

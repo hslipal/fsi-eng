@@ -61,13 +61,22 @@ export const WRITING_PROMPTS: readonly WritingPrompt[] = [
   },
 ];
 
-export const SPEAKING_QUESTIONS: readonly string[] = [
-  'Do you prefer working from home or in an office? Why?',
-  'Describe a skill you learned recently. You should say what it is, how you learned it, and explain why it is useful.',
-  'How might technology change the way people learn languages in the future?',
-];
-
 export function countWords(text: string): number {
   const trimmed = text.trim();
   return trimmed.length === 0 ? 0 : trimmed.split(/\s+/).length;
+}
+
+export const SpeakingPromptSchema = z.object({
+  key: z.string().min(1),
+  part: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  question: z.string().min(1),
+  hasSample: z.boolean(),
+  sampleSeconds: z.number().nullable(),
+  devOnly: z.boolean(),
+});
+export type SpeakingPrompt = z.infer<typeof SpeakingPromptSchema>;
+export const SpeakingPromptListSchema = z.array(SpeakingPromptSchema);
+
+export function sampleUrl(prompt: SpeakingPrompt): string {
+  return `/api/content/speaking-prompts/${encodeURIComponent(prompt.key)}/sample`;
 }

@@ -15,9 +15,23 @@ public record DrillJson(
     @Nullable List<ItemJson> items,
     @Nullable List<LineJson> lines) {
 
-  /** One cue with its accepted answers. */
+  /**
+   * One question. Typed and choice items use cue/answers/options; speaking prompts use
+   * cue/part/audio/seconds.
+   */
   public record ItemJson(
-      @Nullable String cue, @Nullable List<String> answers, @Nullable List<String> options) {}
+      @Nullable String cue,
+      @Nullable List<String> answers,
+      @Nullable List<String> options,
+      @Nullable Integer part,
+      @Nullable String audio,
+      @Nullable Double seconds) {
+
+    public ItemJson(
+        @Nullable String cue, @Nullable List<String> answers, @Nullable List<String> options) {
+      this(cue, answers, options, null, null, null);
+    }
+  }
 
   /** One dialogue line. */
   public record LineJson(@Nullable String speaker, @Nullable String text) {}

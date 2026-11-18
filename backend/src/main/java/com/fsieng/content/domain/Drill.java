@@ -4,7 +4,8 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 /** One exercise inside a content item: a dialogue to memorise or a pattern drill. */
-public sealed interface Drill permits Drill.Dialogue, Drill.PatternDrill, Drill.Reading {
+public sealed interface Drill
+    permits Drill.Dialogue, Drill.PatternDrill, Drill.Reading, Drill.Speaking {
 
   /** FSI basic dialogue: learners listen, repeat and memorise it line by line. */
   record Dialogue(List<Line> lines) implements Drill {
@@ -54,6 +55,47 @@ public sealed interface Drill permits Drill.Dialogue, Drill.PatternDrill, Drill.
       }
       items = List.copyOf(items);
     }
+  }
+
+  /** IELTS speaking questions, each optionally with a recorded sample answer. Not auto-graded. */
+  record Speaking(String instruction, List<SpeakingPrompt> prompts) implements Drill {
+    public Speaking {
+      requireText(instruction, "speaking instruction");
+      if (prompts.isEmpty()) {
+        throw new InvalidContentException("a speaking drill needs at least one question");
+      }
+      prompts = List.copyOf(prompts);
+    }
+  }
+
+  /**
+   * One speaking question. {@code audio} is a sample answer: a path relative to the content root
+   * (content/ or content-dev/), e.g. "ielts/speaking-audio/q1.mp3"; no "..", no absolute paths.
+   */
+  record SpeakingPrompt(
+      String question, int part, @Nullable String audio, @Nullable Double seconds) {
+    public SpeakingPrompt {
+      requireText(question, "speaking question");
+      if (part < 1 || part > 3) {
+        throw new InvalidContentException("speaking part must be 1, 2 or 3");
+      }
+      if (audio != null && !isSafeRelativePath(audio)) {
+        throw new InvalidContentException("unsafe audio path: " + audio);
+      }
+    }
+  }
+
+  /** A relative path that cannot leave its folder. */
+  static boolean isSafeRelativePath(String path) {
+    if (path.isBlank() || path.startsWith("/") || path.startsWith("\\") || path.contains(":")) {
+      return false;
+    }
+    for (String segment : path.split("[/\\\\]")) {
+      if (segment.equals("..")) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

@@ -1,18 +1,22 @@
 package com.fsieng.config;
 
 import com.fsieng.content.adapter.out.files.ContentFileSource;
+import com.fsieng.content.adapter.out.files.SampleAudioFiles;
 import com.fsieng.content.adapter.out.json.DrillJsonCodec;
 import com.fsieng.content.adapter.out.persistence.ContentItemJpaRepository;
 import com.fsieng.content.adapter.out.persistence.ContentPersistenceAdapter;
 import com.fsieng.content.application.port.in.ImportContentUseCase;
 import com.fsieng.content.application.port.in.ListPublishedContentUseCase;
+import com.fsieng.content.application.port.in.SpeakingPromptsUseCase;
 import com.fsieng.content.application.port.out.LoadContentPort;
 import com.fsieng.content.application.port.out.ReadContentFilesPort;
 import com.fsieng.content.application.port.out.SaveContentPort;
 import com.fsieng.content.application.service.ContentImportService;
 import com.fsieng.content.application.service.ContentService;
+import com.fsieng.content.application.service.SpeakingPromptsService;
 import com.fsieng.content.domain.ContentImportReport;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,10 +46,34 @@ public class ContentConfig {
     return new ContentPersistenceAdapter(repository, drillJsonCodec);
   }
 
+  /**
+   * content/ always; content-dev/ (copyrighted, unlicensed material) only when
+   * fsi.content.include-dev-only=true, which only the "dev" profile sets.
+   */
   @Bean
   ReadContentFilesPort readContentFilesPort(
-      @Value("${fsi.content.dir:../content}") String contentDir) {
-    return new ContentFileSource(Path.of(contentDir), CONTENT_JSON);
+      @Value("${fsi.content.dir:../content}") String contentDir,
+      @Value("${fsi.content.dev-dir:../content-dev}") String devDir,
+      @Value("${fsi.content.include-dev-only:false}") boolean includeDevOnly) {
+    ContentFileSource content = new ContentFileSource(Path.of(contentDir), CONTENT_JSON);
+    if (!includeDevOnly) {
+      return content;
+    }
+    LOG.warn("Dev-only content from {} is enabled. Never use this in production.", devDir);
+    ContentFileSource dev = new ContentFileSource(Path.of(devDir), CONTENT_JSON);
+    return () -> Stream.concat(content.readAll().stream(), dev.readAll().stream()).toList();
+  }
+
+  @Bean
+  SpeakingPromptsUseCase speakingPromptsUseCase(
+      LoadContentPort loadContentPort,
+      @Value("${fsi.content.dir:../content}") String contentDir,
+      @Value("${fsi.content.dev-dir:../content-dev}") String devDir,
+      @Value("${fsi.content.include-dev-only:false}") boolean includeDevOnly) {
+    return new SpeakingPromptsService(
+        loadContentPort,
+        new SampleAudioFiles(Path.of(contentDir), Path.of(devDir)),
+        includeDevOnly);
   }
 
   @Bean
