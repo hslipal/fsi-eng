@@ -26,14 +26,24 @@ docker compose up -d postgres               # PostgreSQL on localhost:5432 (fsie
 
 The first backend build downloads Maven dependencies into the `m2` Docker volume; later runs reuse it.
 
-## Run the app against PostgreSQL
+## Run the whole app (Docker Desktop)
 
 ```bash
-docker compose up -d postgres
-docker compose --profile tools run --rm --service-ports maven \
-  mvn spring-boot:run -Dspring-boot.run.profiles=postgres,dev
-(cd frontend && npm run dev)                # http://localhost:5173, proxies /api to :8080
+docker compose up -d                 # PostgreSQL + backend + frontend
+docker compose logs -f backend       # first start compiles the backend: wait for "Started FsiEngApplication"
 ```
+
+Open http://localhost:5173. The backend (http://localhost:8080) runs with profiles
+`postgres,dev`: at startup it imports `content/` and the dev-only `content-dev/`.
+
+- Frontend changes reload in the browser by themselves.
+- Backend changes: `docker compose restart backend`.
+- Stop: `docker compose down` (the database stays in the `pgdata` volume;
+  `docker compose down -v` wipes it).
+
+Without Docker for the app: `docker compose up -d postgres`, then
+`docker compose --profile tools run --rm --service-ports maven mvn spring-boot:run -Dspring-boot.run.profiles=postgres,dev`
+and `(cd frontend && npm run dev)`.
 
 AI scoring (IELTS writing/speaking) needs `DEEPSEEK_API_KEY`: put `DEEPSEEK_API_KEY=...` in a
 git-ignored `.env` file next to `docker-compose.yml`. Without it the assessment endpoints answer

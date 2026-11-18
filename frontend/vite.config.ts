@@ -3,6 +3,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
+// Where /api goes: the local backend, or the backend container under Docker Compose.
+const apiTarget = process.env['API_TARGET'] ?? 'http://localhost:8080';
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -10,10 +13,11 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: { '/api': 'http://localhost:8080' },
+    proxy: { '/api': apiTarget },
+    watch: { usePolling: process.env['WATCH_POLL'] === '1' },
   },
   preview: {
-    proxy: { '/api': 'http://localhost:8080' },
+    proxy: { '/api': apiTarget },
   },
   test: {
     environment: 'jsdom',
