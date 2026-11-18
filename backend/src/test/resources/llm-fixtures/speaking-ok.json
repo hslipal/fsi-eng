@@ -1,0 +1,10 @@
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "{\"criteria\":[{\"criterion\":\"fluency-coherence\",\"band\":6.0,\"comment\":\"回答偏短。\"},{\"criterion\":\"lexical-resource\",\"band\":6.5,\"comment\":\"用词恰当。\"},{\"criterion\":\"grammatical-range-accuracy\",\"band\":6.0,\"comment\":\"时态基本正确。\"}],\"summary\":\"把回答展开到三四句。\"}"
+      }
+    }
+  ]
+}

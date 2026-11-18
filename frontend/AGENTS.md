@@ -42,8 +42,10 @@ strings/numbers (`strict-boolean-expressions`).
 
 ## FSI-Eng notes
 
-- Features: `drills` (FSI pattern drills, exists), `library` (exists); planned: `ielts` (mock
-  tests), `progress` (review queue), `review` (admin content review). One folder each, isolated.
+- Features: `drills` (FSI pattern drills), `library`, `ielts` (writing/speaking estimates);
+  planned: `progress` (review queue), `review` (admin content review). One folder each, isolated.
+- Every AI score is an estimate: render it only through `ielts/ui/ScoreCard.tsx`, which shows
+  the "estimated" label and the disclaimer.
 - Never import an AI SDK (`openai`, `@anthropic-ai/*`, `deepseek*`); scoring goes through
   `/api/assessment`.
 - `npm run e2e` uses Playwright's bundled Chromium; `PW_CHANNEL=chrome npm run e2e` uses a local

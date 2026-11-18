@@ -55,3 +55,36 @@ Unknown card → `404`; blank answer, bad limit or learner id → `400`.
 
 Backend: `CardResponse`, `FeedbackResponse`. Frontend: `CardSchema`, `FeedbackSchema`
 (`frontend/src/features/drills/model/practice.ts`).
+
+## Assessment (AI-estimated IELTS bands)
+
+Scores come from DeepSeek and are **estimates**: every response has `estimated: true` and a
+disclaimer, and clients must show both. Without `DEEPSEEK_API_KEY` both endpoints answer `503`
+after validating the input.
+
+### POST /api/assessment/writing
+
+Request `{ "task": "task-1" | "task-2", "prompt": string (1-2000), "essay": string (≥ 20 words, ≤ 10000 chars) }`.
+
+### POST /api/assessment/speaking (multipart)
+
+Fields `part` (1-3), `question` (1-1000 chars), `audio` (file, ≤ 8 MiB; DeepSeek speech-to-text
+also limits it to 120 seconds).
+
+### Response (both)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| estimated | `true` | always |
+| disclaimer | string | shown with every score |
+| skill | `writing` \| `speaking` | |
+| overallBand | 0-9, step 0.5 | computed by the backend from the criteria (IELTS rounding), never taken from the model |
+| criteria | `{ criterion, band, comment }[]` | writing: task-response, coherence-cohesion, lexical-resource, grammatical-range-accuracy; speaking: fluency-coherence, lexical-resource, grammatical-range-accuracy |
+| summary | string | Simplified Chinese |
+| pronunciationScored | `false` | speech-to-text cannot judge pronunciation |
+| transcript | string \| null | speaking only |
+
+Invalid input → `400`; AI not configured, unreachable or returning an unusable score → `503`.
+
+Backend: `AssessmentResponse`. Frontend: `AssessmentSchema`
+(`frontend/src/features/ielts/model/assessment.ts`).

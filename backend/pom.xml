@@ -85,6 +85,22 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <!-- Protected scoring prompts (prompts/scoring/) are loaded from the classpath. -->
+      <resource>
+        <directory>../prompts</directory>
+        <targetPath>prompts</targetPath>
+        <includes>
+          <include>**/*.md</include>
+        </includes>
+        <excludes>
+          <exclude>**/README.md</exclude>
+        </excludes>
+      </resource>
+    </resources>
     <plugins>
       <!-- ── GUARDRAIL 1: Type system — javac -Werror + Error Prone + NullAway ─────────── -->
       <plugin>
