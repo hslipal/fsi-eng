@@ -37,26 +37,27 @@ public final class DrillJsonCodec {
   static Drill toDomain(DrillJson json) {
     String type = required(json.type(), "drill type");
     if (DIALOGUE.equals(type)) {
-      return new Drill.Dialogue(
-          required(json.lines(), "dialogue lines").stream()
-              .map(
-                  line ->
-                      new Drill.Line(
-                          required(line.speaker(), "dialogue speaker"),
-                          required(line.text(), "dialogue text")))
-              .toList());
+      List<Drill.Line> lines =
+          required(json.lines(), "dialogue lines").stream().map(DrillJsonCodec::toLine).toList();
+      return new Drill.Dialogue(lines);
     }
+    List<Drill.Item> items =
+        required(json.items(), "drill items").stream().map(DrillJsonCodec::toItem).toList();
     return new Drill.PatternDrill(
         DrillType.fromCode(type),
         required(json.instruction(), "drill instruction"),
         json.model(),
-        required(json.items(), "drill items").stream()
-            .map(
-                item ->
-                    new Drill.Item(
-                        required(item.cue(), "drill cue"),
-                        required(item.answers(), "drill answers")))
-            .toList());
+        items);
+  }
+
+  private static Drill.Line toLine(DrillJson.LineJson line) {
+    return new Drill.Line(
+        required(line.speaker(), "dialogue speaker"), required(line.text(), "dialogue text"));
+  }
+
+  private static Drill.Item toItem(DrillJson.ItemJson item) {
+    return new Drill.Item(
+        required(item.cue(), "drill cue"), required(item.answers(), "drill answers"));
   }
 
   static DrillJson toJson(Drill drill) {
