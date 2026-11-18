@@ -7,12 +7,20 @@ export function SpeakingForm({ assessment }: { readonly assessment: AssessmentRu
   const prompts = useSpeakingPrompts();
   switch (prompts.kind) {
     case 'loading':
-      return <p role="status">正在加载口语题目…</p>;
+      return (
+        <p className="status" role="status">
+          正在加载口语题目…
+        </p>
+      );
     case 'error':
-      return <p role="alert">口语题目加载失败：{prompts.message}</p>;
+      return (
+        <p className="alert" role="alert">
+          口语题目加载失败：{prompts.message}
+        </p>
+      );
     case 'ready':
       return prompts.prompts.length === 0 ? (
-        <p>还没有可用的口语题目。</p>
+        <p className="empty">还没有可用的口语题目。</p>
       ) : (
         <SpeakingQuestion prompts={prompts.prompts} assessment={assessment} />
       );
@@ -52,8 +60,12 @@ function SpeakingQuestion({ prompts, assessment }: QuestionProps): ReactElement 
         }}
         onQuestion={setKey}
       />
-      {prompt === undefined ? <p>这个部分没有题目。</p> : <PromptDetails prompt={prompt} />}
-      <label>
+      {prompt === undefined ? (
+        <p className="empty">这个部分没有题目。</p>
+      ) : (
+        <PromptDetails prompt={prompt} />
+      )}
+      <label className="field">
         你的录音（最长 2 分钟、8 MB 以内）
         <input
           type="file"
@@ -63,9 +75,15 @@ function SpeakingQuestion({ prompts, assessment }: QuestionProps): ReactElement 
           }}
         />
       </label>
-      <button type="submit" disabled={busy || audio === null || prompt === undefined}>
-        估分
-      </button>
+      <div className="actions">
+        <button
+          className="button"
+          type="submit"
+          disabled={busy || audio === null || prompt === undefined}
+        >
+          估分
+        </button>
+      </div>
     </form>
   );
 }
@@ -89,7 +107,7 @@ function PartAndQuestion({
 }: PickerProps): ReactElement {
   return (
     <>
-      <label>
+      <label className="field">
         部分
         <select
           value={part}
@@ -104,7 +122,7 @@ function PartAndQuestion({
           ))}
         </select>
       </label>
-      <label>
+      <label className="field">
         题目
         <select
           value={selected}
@@ -124,16 +142,18 @@ function PartAndQuestion({
 }
 
 function PromptDetails({ prompt }: { readonly prompt: SpeakingPrompt }): ReactElement {
+  const length = prompt.sampleSeconds === null ? '' : `（${prompt.sampleSeconds.toFixed(0)} 秒）`;
   return (
     <div>
-      <p>{prompt.question}</p>
-      {prompt.devOnly ? <p role="note">开发素材：来源未授权，仅限开发环境使用</p> : null}
+      <p className="task-prompt">{prompt.question}</p>
+      {prompt.devOnly ? (
+        <p className="dev-note" role="note">
+          开发素材：来源未授权，仅限开发环境使用
+        </p>
+      ) : null}
       {prompt.hasSample ? (
-        <figure>
-          <figcaption>
-            示范回答
-            {prompt.sampleSeconds === null ? '' : `（${prompt.sampleSeconds.toFixed(0)} 秒）`}
-          </figcaption>
+        <figure className="sample">
+          <figcaption>示范回答{length}</figcaption>
           <audio controls preload="none" src={sampleUrl(prompt)} aria-label="示范回答" />
         </figure>
       ) : null}

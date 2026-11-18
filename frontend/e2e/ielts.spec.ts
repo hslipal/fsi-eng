@@ -28,6 +28,10 @@ test('an essay gets an estimated band with the disclaimer', async ({ page }) => 
   }
 
   await page.goto('/');
+  await page
+    .getByRole('navigation', { name: '板块' })
+    .getByRole('button', { name: '雅思写作与口语' })
+    .click();
   const ielts = page.getByRole('region', { name: '雅思写作与口语估分' });
   await ielts.getByLabel('你的作文').fill('Working from home saves time. '.repeat(10));
   await ielts.getByRole('button', { name: '估分' }).click();

@@ -13,9 +13,12 @@ export function IeltsPanel(): ReactElement {
   const current = skill === 'writing' ? writing : speaking;
 
   return (
-    <section aria-labelledby="ielts-title">
+    <section className="panel" aria-labelledby="ielts-title">
       <h2 id="ielts-title">雅思写作与口语估分</h2>
-      <div role="tablist" aria-label="雅思技能">
+      <p className="panel-lead">
+        写一篇作文或上传一段录音，AI 按雅思的评分维度给出估计分和修改建议。
+      </p>
+      <div className="tabs" role="tablist" aria-label="雅思技能">
         <SkillTab skill="writing" label="写作" active={skill} onSelect={setSkill} />
         <SkillTab skill="speaking" label="口语" active={skill} onSelect={setSkill} />
       </div>
@@ -41,6 +44,7 @@ function SkillTab({ skill, label, active, onSelect }: SkillTabProps): ReactEleme
     <button
       type="button"
       role="tab"
+      className="tab"
       aria-selected={skill === active}
       onClick={() => {
         onSelect(skill);
@@ -56,9 +60,17 @@ function Result({ state }: { readonly state: AssessmentState }): ReactElement | 
     case 'idle':
       return null;
     case 'scoring':
-      return <p role="status">AI 正在估分…</p>;
+      return (
+        <p className="status" role="status">
+          AI 正在估分，通常需要十几秒…
+        </p>
+      );
     case 'error':
-      return <p role="alert">估分失败：{state.message}</p>;
+      return (
+        <p className="alert" role="alert">
+          估分失败：{state.message}
+        </p>
+      );
     case 'scored':
       return <ScoreCard result={state.result} />;
   }

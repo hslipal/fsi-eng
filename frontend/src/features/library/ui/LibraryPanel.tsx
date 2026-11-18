@@ -7,14 +7,16 @@ export function LibraryPanel(): ReactElement {
   const state = useContentItems(track);
 
   return (
-    <section aria-labelledby="library-title">
+    <section className="panel" aria-labelledby="library-title">
       <h2 id="library-title">素材库</h2>
-      <div role="tablist" aria-label="赛道">
+      <p className="panel-lead">已审核发布的素材。每份素材里的操练题都会出现在句型操练中。</p>
+      <div className="tabs" role="tablist" aria-label="赛道">
         {TRACKS.map((candidate) => (
           <button
             key={candidate}
             type="button"
             role="tab"
+            className="tab"
             aria-selected={candidate === track}
             onClick={() => {
               setTrack(candidate);
@@ -32,18 +34,28 @@ export function LibraryPanel(): ReactElement {
 function ContentBody({ state }: { readonly state: ContentState }): ReactElement {
   switch (state.kind) {
     case 'loading':
-      return <p role="status">加载中…</p>;
+      return (
+        <p className="status" role="status">
+          加载中…
+        </p>
+      );
     case 'error':
-      return <p role="alert">素材加载失败：{state.message}</p>;
+      return (
+        <p className="alert" role="alert">
+          素材加载失败：{state.message}
+        </p>
+      );
     case 'ready':
       if (state.items.length === 0) {
-        return <p>这个赛道还没有已发布的素材。</p>;
+        return <p className="empty">这个赛道还没有已发布的素材。</p>;
       }
       return (
-        <ul aria-label="已发布素材">
+        <ul className="library-list" aria-label="已发布素材">
           {state.items.map((item) => (
-            <li key={item.id}>
-              {item.title} · {item.level} · {LICENSE_LABELS[item.license]}
+            <li key={item.id} className="library-item">
+              <span className="library-title">{item.title}</span>
+              <span className="library-meta">{LICENSE_LABELS[item.license]}</span>
+              <span className="library-level">{item.level}</span>
             </li>
           ))}
         </ul>

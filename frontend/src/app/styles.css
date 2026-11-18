@@ -1,0 +1,671 @@
+/*
+ * FSI-Eng — "language lab drill sheet".
+ * Interface text is a CJK sans; the English being learned is always a serif, larger,
+ * so learners see at once what is UI and what is language.
+ */
+
+:root {
+  --paper: #f3f5f4;
+  --sheet: #ffffff;
+  --ink: #1c2b3a;
+  --ink-soft: #5b6b78;
+  --rule: #d5dcda;
+  --lab: #1f5f4a;
+  --lab-tint: #e3eeea;
+  --right: #2f7d4f;
+  --close: #a8781a;
+  --wrong: #b4442f;
+
+  --ui:
+    'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --lang: Georgia, 'Noto Serif', 'Source Serif 4', 'Times New Roman', 'Noto Serif SC', serif;
+
+  /* Type scale (modular, ratio 1.2) */
+  --step--1: 0.833rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.44rem;
+  --step-3: 1.728rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --measure: 44rem;
+  --radius-control: 6px;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: var(--step-0);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+figure,
+blockquote,
+fieldset {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lab);
+  outline-offset: 2px;
+}
+
+/* ── Shell ─────────────────────────────────────────────────────────────── */
+
+.shell {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  padding: var(--space-6) var(--space-5);
+  border-right: 1px solid var(--rule);
+  background: var(--sheet);
+}
+
+.brand {
+  font-size: var(--step-1);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.brand-note {
+  margin-top: var(--space-1);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-6);
+}
+
+.rail-link {
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-left: 3px solid transparent;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rail-link:hover {
+  background: var(--paper);
+}
+
+.rail-link[aria-current='page'] {
+  border-left-color: var(--lab);
+  background: var(--lab-tint);
+  font-weight: 700;
+}
+
+.main {
+  padding: var(--space-6) var(--space-6) var(--space-7);
+}
+
+.panel {
+  max-width: var(--measure);
+}
+
+.panel > h2 {
+  font-size: var(--step-3);
+  line-height: 1.25;
+}
+
+.panel-lead {
+  margin-top: var(--space-2);
+  color: var(--ink-soft);
+}
+
+/* ── Tabs (tracks, skills) ─────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin: var(--space-5) 0 var(--space-5);
+  border-bottom: 1px solid var(--rule);
+}
+
+.tab {
+  padding: var(--space-2) 0;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--lab);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ── Status lines ──────────────────────────────────────────────────────── */
+
+.status {
+  color: var(--ink-soft);
+}
+
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--wrong);
+  background: #fbefec;
+}
+
+.empty {
+  padding: var(--space-5) 0;
+  color: var(--ink-soft);
+}
+
+/* ── Drill sheet ───────────────────────────────────────────────────────── */
+
+.drill {
+  padding: var(--space-5) var(--space-6) var(--space-6);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--sheet);
+}
+
+.drill-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.drill-progress-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--rule);
+}
+
+.drill-progress-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--lab);
+}
+
+.drill-kind {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: baseline;
+  margin-top: var(--space-4);
+}
+
+.drill-type {
+  color: var(--lab);
+  font-weight: 700;
+}
+
+.drill-title {
+  color: var(--ink-soft);
+}
+
+.drill-instruction {
+  margin-top: var(--space-2);
+}
+
+.drill-model {
+  margin-top: var(--space-5);
+  font-family: var(--lang);
+  font-size: var(--step-2);
+  line-height: 1.45;
+}
+
+/* The one loud element: the cue sits in a slot, like a blank on the drill sheet. */
+.drill-cue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: baseline;
+  margin-top: var(--space-5);
+}
+
+.drill-cue-label {
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.drill-slot {
+  padding: 0 var(--space-2) 2px;
+  border-bottom: 3px solid var(--lab);
+  background: var(--lab-tint);
+  font-family: var(--lang);
+  font-size: var(--step-2);
+  font-weight: 400;
+}
+
+.passage {
+  margin-top: var(--space-5);
+  padding-left: var(--space-5);
+  border-left: 2px solid var(--rule);
+  font-family: var(--lang);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.passage p + p {
+  margin-top: var(--space-4);
+}
+
+.answer {
+  display: block;
+  margin-top: var(--space-6);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.answer input {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-1);
+  padding: var(--space-2) 0;
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--lang);
+  font-size: var(--step-2);
+}
+
+.answer input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--lab);
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding: 0;
+  border: 0;
+}
+
+.choices legend {
+  margin-bottom: var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.choice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  font-family: var(--lang);
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--lab);
+  background: var(--lab-tint);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.button {
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--lab);
+  border-radius: var(--radius-control);
+  background: var(--lab);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #184d3c;
+}
+
+.button:disabled {
+  border-color: var(--rule);
+  background: var(--rule);
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+/* Feedback: a coloured edge carries the verdict; words say it too. */
+.verdict {
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid currentColor;
+  font-weight: 700;
+}
+
+.verdict-correct {
+  color: var(--right);
+  background: #e6f2ea;
+}
+
+.verdict-close {
+  color: var(--close);
+  background: #f7efdc;
+}
+
+.verdict-wrong {
+  color: var(--wrong);
+  background: #fbefec;
+}
+
+.expected {
+  margin-top: var(--space-4);
+  font-family: var(--lang);
+  font-size: var(--step-1);
+}
+
+.box-note {
+  margin-top: var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.done {
+  padding: var(--space-6);
+  border: 1px solid var(--rule);
+  background: var(--sheet);
+  font-size: var(--step-1);
+}
+
+/* ── Forms (IELTS) ─────────────────────────────────────────────────────── */
+
+.field {
+  display: block;
+  margin-top: var(--space-4);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.field select,
+.field textarea,
+.field input[type='file'] {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-1);
+  color: var(--ink);
+  font-size: var(--step-0);
+}
+
+.field select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+}
+
+.field textarea {
+  min-height: 18rem;
+  padding: var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  font-family: var(--lang);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  resize: vertical;
+}
+
+.task-prompt {
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--lab);
+  background: var(--sheet);
+  font-family: var(--lang);
+  font-size: var(--step-1);
+  line-height: 1.6;
+}
+
+.word-count {
+  margin-top: var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.dev-note {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--close);
+  color: #7a5710;
+  font-size: var(--step--1);
+}
+
+.sample {
+  margin-top: var(--space-4);
+}
+
+.sample figcaption {
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.sample audio {
+  width: 100%;
+  margin-top: var(--space-1);
+}
+
+/* ── Score sheet: each criterion on a 0-9 band scale ───────────────────── */
+
+.score {
+  margin-top: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--rule);
+  background: var(--sheet);
+}
+
+.score h3 {
+  font-size: var(--step-1);
+}
+
+.score-overall {
+  margin-top: var(--space-2);
+  font-size: var(--step-2);
+  font-weight: 700;
+}
+
+.bands {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.band-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.band-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.band-scale {
+  position: relative;
+  height: 6px;
+  margin-top: var(--space-2);
+  background: repeating-linear-gradient(
+    to right,
+    var(--rule) 0,
+    var(--rule) calc(100% / 9 - 2px),
+    transparent calc(100% / 9 - 2px),
+    transparent calc(100% / 9)
+  );
+}
+
+.band-scale > span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--lab);
+}
+
+.band-comment {
+  margin-top: var(--space-1);
+  color: var(--ink-soft);
+}
+
+.band-unscored .band-value {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.score-summary {
+  margin-top: var(--space-5);
+}
+
+.transcript {
+  margin-top: var(--space-4);
+  font-family: var(--lang);
+}
+
+.disclaimer {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+/* ── Library ───────────────────────────────────────────────────────────── */
+
+.library-list {
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.library-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.library-title {
+  font-family: var(--lang);
+  font-size: var(--step-1);
+}
+
+.library-meta {
+  grid-column: 1;
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
+.library-level {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+  color: var(--lab);
+  font-weight: 700;
+  font-size: var(--step--1);
+}
+
+/* ── Small screens: the rail becomes a top bar ─────────────────────────── */
+
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    align-content: start;
+  }
+
+  .rail {
+    position: static;
+    height: auto;
+    padding: var(--space-4) var(--space-4) 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .rail-nav {
+    flex-direction: row;
+    margin-top: var(--space-3);
+    overflow-x: auto;
+  }
+
+  .rail-link {
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+
+  .rail-link[aria-current='page'] {
+    border-bottom-color: var(--lab);
+  }
+
+  .main {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+
+  .drill,
+  .score {
+    padding: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

@@ -48,7 +48,11 @@ describe('IeltsPanel', () => {
 
     expect(await screen.findByRole('heading', { name: 'AI 估计分数（非官方）' })).toBeVisible();
     expect(screen.getByText('估计总分：6.0')).toBeInTheDocument();
-    expect(screen.getByText('语法多样性与准确性：5.5 — 主谓一致。')).toBeInTheDocument();
+    expect(screen.getByRole('meter', { name: '语法多样性与准确性' })).toHaveAttribute(
+      'aria-valuenow',
+      '5.5',
+    );
+    expect(screen.getByText('主谓一致。')).toBeInTheDocument();
     expect(screen.getByRole('note')).toHaveTextContent('不等同于雅思官方考官评分');
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/assessment/writing',
@@ -108,7 +112,9 @@ describe('IeltsPanel', () => {
     );
     await user.click(screen.getByRole('button', { name: '估分' }));
 
-    expect(await screen.findByText('发音：未评分（语音转文字无法判断发音）')).toBeInTheDocument();
+    expect(await screen.findByText('语音转文字无法判断发音。')).toBeInTheDocument();
+    expect(screen.getByText('未评分')).toBeInTheDocument();
+    expect(screen.queryByRole('meter', { name: '发音' })).not.toBeInTheDocument();
     expect(screen.getByText('识别出的回答：I prefer working from home.')).toBeInTheDocument();
     const upload = sent.at(-1);
     expect(upload?.url).toBe('/api/assessment/speaking');
