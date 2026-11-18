@@ -49,6 +49,36 @@ jobs:
           name: backend-jar
           path: backend/target/fsi-eng-backend-*.jar
 
+  backend-postgres:
+    name: Backend on PostgreSQL 18 (Flyway migrations + integration tests)
+    needs: guardrails
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: fsieng
+          POSTGRES_USER: fsieng
+          POSTGRES_PASSWORD: fsieng-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fsieng -d fsieng"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      FSI_DB_URL: jdbc:postgresql://localhost:5432/fsieng
+      FSI_DB_USER: fsieng
+      FSI_DB_PASSWORD: fsieng-ci
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - working-directory: backend
+        run: mvn -B -ntp test -Dspring.profiles.active=postgres
+
   frontend:
     name: Frontend (tsc strict · ESLint · dependency-cruiser · Vitest)
     needs: guardrails

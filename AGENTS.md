@@ -136,7 +136,8 @@ change the other **in the same PR** and update `docs/api-contract.md`.
 - Scoring prompts in `prompts/scoring/` are protected. If you think one should change, explain
   why in the PR; a human runs the baseline-set evaluation.
 - Tests use recorded DeepSeek responses. Never call a real model from a test.
-- Persistence is Hibernate/JPA. `@Entity` classes live only in `adapter/out/persistence/` and
+- The database is PostgreSQL 18 in Docker; schema changes are Flyway migrations, never
+  `ddl-auto=update`. Persistence is Hibernate/JPA. `@Entity` classes live only in `adapter/out/persistence/` and
   are mapped to domain records; a port never returns an entity. Keep
   `spring.jpa.open-in-view=false`.
 - Spaced-repetition scheduling uses the injected `Clock`.

@@ -3,8 +3,9 @@
 Stack: Java 25 · Spring Boot 4.1 · Maven · Error Prone + NullAway (JSpecify) · ArchUnit · JUnit 5 · AssertJ · JaCoCo · Spotless (google-java-format).
 
 ```bash
-mvn -B spotless:apply   # format first — CI runs spotless:check
-mvn -B verify           # enforcer → compile (-Werror, Error Prone, NullAway) → tests (+ArchUnit) → JaCoCo gate
+../scripts/mvn.sh -B spotless:apply   # format first — CI runs spotless:check
+../scripts/mvn.sh -B verify           # enforcer → compile (-Werror, Error Prone, NullAway) → tests (+ArchUnit) → JaCoCo gate
+# scripts/mvn.sh uses a local mvn if present, otherwise Maven + JDK 25 in Docker (docker-compose.yml)
 ```
 
 ## Recipe: add a use case (example: content module)
@@ -32,6 +33,9 @@ mvn -B verify           # enforcer → compile (-Werror, Error Prone, NullAway) 
 - **Exceptions**: never `throw new RuntimeException(...)`; domain errors extend `DomainException`
   and get an HTTP mapping in `ApiExceptionHandler`.
 - **Banned deps** (enforcer): Lombok, JUnit 4, log4j 1, Joda-Time.
+- **Database**: PostgreSQL 18 (Docker, profile `postgres`); tests use H2 in PostgreSQL mode.
+  Schema changes are Flyway migrations in `src/main/resources/db/migration` (`V<n>__<name>.sql`,
+  portable SQL, never edit an applied one); `ddl-auto=validate` checks entities against them.
 - **Hibernate/JPA**: allowed. Entities only in `adapter/out/persistence/`, mapped to domain
   records by a mapper; `open-in-view` stays off.
 - **DeepSeek**: only from `adapter/out/llm/` or `adapter/out/asr/` (ArchUnit

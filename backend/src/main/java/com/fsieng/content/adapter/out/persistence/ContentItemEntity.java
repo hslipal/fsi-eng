@@ -27,7 +27,7 @@ public class ContentItemEntity {
 
   private @Nullable String licenseDetail;
 
-  @Column(nullable = false)
+  @Column(name = "item_level", nullable = false)
   private String level = "";
 
   private @Nullable String reviewedBy;

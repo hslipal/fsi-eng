@@ -128,7 +128,7 @@ export const x = LibraryPanel;' \
 
 backend_cases() {
   echo "Backend guardrails"
-  local mvn="mvn -B -ntp -q -Dspotless.check.skip=true -Denforcer.skip=true"
+  local mvn="$ROOT/scripts/mvn.sh -B -ntp -q -Dspotless.check.skip=true -Denforcer.skip=true"
   local arch="$mvn test -Dtest=ArchitectureTest -Dsurefire.failIfNoSpecifiedTests=false -Djacoco.skip=true"
 
   expect_caught "controller bypasses use-case port (injects port.out)" \

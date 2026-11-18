@@ -38,7 +38,7 @@ run_content() {
 
 run_backend() {
   step "Backend: enforcer → Spotless → javac -Werror + Error Prone + NullAway → JUnit + ArchUnit → JaCoCo"
-  (cd "$ROOT/backend" && mvn -B -ntp verify)
+  (cd "$ROOT/backend" && "$ROOT/scripts/mvn.sh" -B -ntp verify)
 }
 
 run_frontend() {

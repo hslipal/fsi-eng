@@ -44,7 +44,22 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
-    <!-- In-memory database for dev and tests; the production database is still to be chosen. -->
+    <!-- Schema is owned by Flyway migrations (src/main/resources/db/migration); Hibernate only validates. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+    <!-- PostgreSQL (Docker, profile "postgres") is the real database. -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- H2 in PostgreSQL mode: default profile for fast tests and the CI e2e run. -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>

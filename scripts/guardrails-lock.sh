@@ -24,6 +24,8 @@ PROTECTED=(
   .github/CODEOWNERS
   content-policy.json
   scripts/verify.sh
+  scripts/mvn.sh
+  docker-compose.yml
   scripts/guardrails-lock.sh
   scripts/guardrail-selftest.sh
   scripts/content-check.mjs
