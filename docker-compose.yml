@@ -1,10 +1,16 @@
-# Local toolchain and database on Docker Desktop.
+# The whole app on Docker Desktop.
 #
-#   docker compose up -d postgres                     PostgreSQL 18 on localhost:5432
-#   ./scripts/mvn.sh -B verify                        Maven + JDK 25 in a container (used by verify.sh)
-#   docker compose run --rm --service-ports maven mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+#   docker compose up -d                 PostgreSQL + backend + frontend → http://localhost:5173
+#   docker compose logs -f backend       watch the backend start (first start compiles, ~2-4 min)
+#   docker compose restart backend       pick up backend code changes
+#   docker compose down                  stop (data stays in the pgdata volume)
 #
-# The password below is for local development only. Put real values in a git-ignored .env file.
+#   docker compose up -d postgres        database only (e.g. for ./scripts/verify.sh)
+#   ./scripts/mvn.sh -B verify           Maven + JDK 25 in a container (used by verify.sh)
+#
+# The backend runs with profiles postgres,dev: it imports content/ AND the dev-only content-dev/
+# at startup. Local development only. Passwords below are for local use; put real values and
+# DEEPSEEK_API_KEY in a git-ignored .env file next to this one.
 services:
   postgres:
     image: postgres:18
@@ -23,10 +29,13 @@ services:
       timeout: 3s
       retries: 20
 
-  maven:
+  backend:
     image: maven:3.9-eclipse-temurin-25
-    profiles: ['tools']
     working_dir: /workspace/backend
+    command: ['mvn', '-B', '-ntp', 'spring-boot:run', '-Dspring-boot.run.profiles=postgres,dev']
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./:/workspace
       - m2:/root/.m2
@@ -36,9 +45,42 @@ services:
       FSI_DB_URL: jdbc:postgresql://postgres:5432/fsieng
       FSI_DB_USER: ${FSI_DB_USER:-fsieng}
       FSI_DB_PASSWORD: ${FSI_DB_PASSWORD:-fsieng-dev}
-      # AI scoring; put the key in a git-ignored .env file next to this one.
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+
+  frontend:
+    image: node:22
+    working_dir: /workspace/frontend
+    command: ['sh', '-c', 'npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173']
+    depends_on:
+      - backend
+    volumes:
+      - ./:/workspace
+      # Linux packages for the container; never mixed with the Windows node_modules on the host.
+      - frontend_node_modules:/workspace/frontend/node_modules
+    ports:
+      - '5173:5173'
+    environment:
+      API_TARGET: http://backend:8080
+      # File changes on a Windows folder do not reach the container as events; poll instead.
+      WATCH_POLL: '1'
+
+  maven:
+    image: maven:3.9-eclipse-temurin-25
+    profiles: ['tools']
+    working_dir: /workspace/backend
+    volumes:
+      - ./:/workspace
+      - m2:/root/.m2
+    # Published only with `run --service-ports`; do not combine with the backend service.
+    ports:
+      - '8080:8080'
+    environment:
+      FSI_DB_URL: jdbc:postgresql://postgres:5432/fsieng
+      FSI_DB_USER: ${FSI_DB_USER:-fsieng}
+      FSI_DB_PASSWORD: ${FSI_DB_PASSWORD:-fsieng-dev}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
 
 volumes:
   pgdata:
   m2:
+  frontend_node_modules:
