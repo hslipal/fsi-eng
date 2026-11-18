@@ -90,12 +90,8 @@ public sealed interface Drill
     if (path.isBlank() || path.startsWith("/") || path.startsWith("\\") || path.contains(":")) {
       return false;
     }
-    for (String segment : path.split("[/\\\\]")) {
-      if (segment.equals("..")) {
-        return false;
-      }
-    }
-    return true;
+    String unified = "/" + path.replace('\\', '/') + "/";
+    return !unified.contains("/../");
   }
 
   /**
