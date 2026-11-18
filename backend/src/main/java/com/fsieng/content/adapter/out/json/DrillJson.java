@@ -11,11 +11,13 @@ public record DrillJson(
     @Nullable String type,
     @Nullable String instruction,
     @Nullable String model,
+    @Nullable String passage,
     @Nullable List<ItemJson> items,
     @Nullable List<LineJson> lines) {
 
   /** One cue with its accepted answers. */
-  public record ItemJson(@Nullable String cue, @Nullable List<String> answers) {}
+  public record ItemJson(
+      @Nullable String cue, @Nullable List<String> answers, @Nullable List<String> options) {}
 
   /** One dialogue line. */
   public record LineJson(@Nullable String speaker, @Nullable String text) {}

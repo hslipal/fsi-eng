@@ -4,6 +4,7 @@ import com.fsieng.content.domain.Drill;
 import com.fsieng.content.domain.DrillType;
 import com.fsieng.content.domain.InvalidContentException;
 import java.util.List;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -12,6 +13,7 @@ import tools.jackson.databind.json.JsonMapper;
 public final class DrillJsonCodec {
 
   private static final String DIALOGUE = "dialogue";
+  private static final String READING = "reading";
 
   private final JsonMapper mapper;
 
@@ -43,6 +45,12 @@ public final class DrillJsonCodec {
     }
     List<Drill.Item> items =
         required(json.items(), "drill items").stream().map(DrillJsonCodec::toItem).toList();
+    if (READING.equals(type)) {
+      return new Drill.Reading(
+          required(json.instruction(), "reading instruction"),
+          required(json.passage(), "reading passage"),
+          items);
+    }
     return new Drill.PatternDrill(
         DrillType.fromCode(type),
         required(json.instruction(), "drill instruction"),
@@ -56,8 +64,9 @@ public final class DrillJsonCodec {
   }
 
   private static Drill.Item toItem(DrillJson.ItemJson item) {
+    List<String> options = Objects.requireNonNullElse(item.options(), List.of());
     return new Drill.Item(
-        required(item.cue(), "drill cue"), required(item.answers(), "drill answers"));
+        required(item.cue(), "drill cue"), required(item.answers(), "drill answers"), options);
   }
 
   static DrillJson toJson(Drill drill) {
@@ -68,19 +77,33 @@ public final class DrillJsonCodec {
               null,
               null,
               null,
-              dialogue.lines().stream()
-                  .map(line -> new DrillJson.LineJson(line.speaker(), line.text()))
-                  .toList());
+              null,
+              dialogue.lines().stream().map(DrillJsonCodec::toJson).toList());
       case Drill.PatternDrill pattern ->
           new DrillJson(
               pattern.type().code(),
               pattern.instruction(),
               pattern.model(),
-              pattern.items().stream()
-                  .map(item -> new DrillJson.ItemJson(item.cue(), item.answers()))
-                  .toList(),
+              null,
+              pattern.items().stream().map(DrillJsonCodec::toJson).toList(),
+              null);
+      case Drill.Reading reading ->
+          new DrillJson(
+              READING,
+              reading.instruction(),
+              null,
+              reading.passage(),
+              reading.items().stream().map(DrillJsonCodec::toJson).toList(),
               null);
     };
+  }
+
+  private static DrillJson.LineJson toJson(Drill.Line line) {
+    return new DrillJson.LineJson(line.speaker(), line.text());
+  }
+
+  private static DrillJson.ItemJson toJson(Drill.Item item) {
+    return new DrillJson.ItemJson(item.cue(), item.answers(), item.options());
   }
 
   private static <T> T required(@Nullable T value, String what) {

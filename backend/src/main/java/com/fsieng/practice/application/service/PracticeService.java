@@ -61,7 +61,10 @@ public final class PracticeService implements GetDueCardsUseCase, SubmitAnswerUs
   public Feedback submit(LearnerId learner, CardKey key, String answer) {
     PracticeItem item = catalog.find(key).orElseThrow(() -> new UnknownCardException(key));
     Instant now = clock.instant();
-    Grade grade = grader.grade(answer, item.answers());
+    Grade grade =
+        item.options().isEmpty()
+            ? grader.grade(answer, item.answers())
+            : grader.gradeChoice(answer, item.answers());
     ReviewCard before =
         cards.find(learner, key).orElseGet(() -> ReviewCard.fresh(learner, key, now));
     ReviewCard after = before.after(grade.verdict(), now);

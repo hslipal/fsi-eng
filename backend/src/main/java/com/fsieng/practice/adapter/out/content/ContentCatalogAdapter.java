@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Turns published content into practice items. Only pattern drills are auto-graded; dialogues are
@@ -44,21 +45,54 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
   private static List<PracticeItem> itemsOf(ContentItem content) {
     List<PracticeItem> items = new ArrayList<>();
     for (int d = 0; d < content.drills().size(); d++) {
-      if (content.drills().get(d) instanceof Drill.PatternDrill drill) {
-        for (int i = 0; i < drill.items().size(); i++) {
-          Drill.Item item = drill.items().get(i);
-          items.add(
-              new PracticeItem(
-                  CardKey.of(content.id().value(), d, i),
-                  content.title(),
-                  drill.type().code(),
-                  drill.instruction(),
-                  drill.model(),
-                  item.cue(),
-                  item.answers()));
-        }
+      Drill drill = content.drills().get(d);
+      if (drill instanceof Drill.PatternDrill pattern) {
+        addAll(
+            items,
+            content,
+            d,
+            pattern.type().code(),
+            pattern.instruction(),
+            pattern.model(),
+            null,
+            pattern.items());
+      } else if (drill instanceof Drill.Reading reading) {
+        addAll(
+            items,
+            content,
+            d,
+            "reading",
+            reading.instruction(),
+            null,
+            reading.passage(),
+            reading.items());
       }
     }
     return items;
+  }
+
+  private static void addAll(
+      List<PracticeItem> into,
+      ContentItem content,
+      int drillIndex,
+      String type,
+      String instruction,
+      @Nullable String model,
+      @Nullable String passage,
+      List<Drill.Item> drillItems) {
+    for (int i = 0; i < drillItems.size(); i++) {
+      Drill.Item item = drillItems.get(i);
+      into.add(
+          new PracticeItem(
+              CardKey.of(content.id().value(), drillIndex, i),
+              content.title(),
+              type,
+              instruction,
+              model,
+              passage,
+              item.cue(),
+              item.options(),
+              item.answers()));
+    }
   }
 }

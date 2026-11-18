@@ -93,6 +93,29 @@ function checkReviewer(file, item) {
   }
 }
 
+function itemProblem(it, needsOptions) {
+  if (!isText(it?.cue)) return 'every item needs a cue';
+  if (!Array.isArray(it.answers) || it.answers.length === 0 || !it.answers.every(isText)) {
+    return 'every item needs at least one answer';
+  }
+  const options = it.options ?? [];
+  if (!Array.isArray(options) || !options.every(isText)) return 'options must be text';
+  if (needsOptions && options.length === 0) return 'every reading question needs options';
+  if (options.length > 0 && !it.answers.every((answer) => options.includes(answer))) {
+    return `answer of "${it.cue}" is not one of its options`;
+  }
+  return null;
+}
+
+function itemsProblem(items, needsOptions) {
+  if (!Array.isArray(items) || items.length === 0) return 'a drill needs items';
+  for (const it of items) {
+    const problem = itemProblem(it, needsOptions);
+    if (problem !== null) return problem;
+  }
+  return null;
+}
+
 function drillProblem(drill) {
   if (drill?.type === 'dialogue') {
     const lines = drill.lines;
@@ -100,17 +123,16 @@ function drillProblem(drill) {
     const bad = lines.some((line) => !isText(line?.speaker) || !isText(line?.text));
     return bad ? 'every dialogue line needs speaker and text' : null;
   }
-  if (!DRILL_TYPES.includes(drill?.type)) return `type must be dialogue or ${DRILL_TYPES.join(', ')}`;
+  if (drill?.type === 'reading') {
+    if (!isText(drill.instruction)) return 'a reading drill needs an instruction';
+    if (!isText(drill.passage)) return 'a reading drill needs a passage';
+    return itemsProblem(drill.items, true);
+  }
+  if (!DRILL_TYPES.includes(drill?.type)) {
+    return `type must be dialogue, reading or ${DRILL_TYPES.join(', ')}`;
+  }
   if (!isText(drill.instruction)) return `a ${drill.type} drill needs an instruction`;
-  if (!Array.isArray(drill.items) || drill.items.length === 0) return 'a drill needs items';
-  const bad = drill.items.some(
-    (it) =>
-      !isText(it?.cue) ||
-      !Array.isArray(it.answers) ||
-      it.answers.length === 0 ||
-      !it.answers.every(isText),
-  );
-  return bad ? 'every item needs a cue and at least one answer' : null;
+  return itemsProblem(drill.items, false);
 }
 
 function checkDrills(file, item) {

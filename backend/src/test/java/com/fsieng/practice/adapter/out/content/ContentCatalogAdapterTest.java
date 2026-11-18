@@ -35,21 +35,35 @@ class ContentCatalogAdapterTest {
                   "Yesterday I finished the login page.",
                   List.of(
                       new Drill.Item("fixed the bug", List.of("Yesterday I fixed the bug.")),
-                      new Drill.Item("reviewed a PR", List.of("Yesterday I reviewed a PR."))))));
+                      new Drill.Item("reviewed a PR", List.of("Yesterday I reviewed a PR.")))),
+              new Drill.Reading(
+                  "TRUE, FALSE or NOT GIVEN?",
+                  "The stand-up lasts ten minutes.",
+                  List.of(
+                      new Drill.Item(
+                          "The stand-up is long.",
+                          List.of("FALSE"),
+                          List.of("TRUE", "FALSE", "NOT GIVEN"))))));
 
   private final ContentCatalogAdapter adapter =
       new ContentCatalogAdapter(track -> track == Track.IT ? List.of(STANDUP) : List.of());
 
   @Test
-  void turnsPatternDrillItemsIntoCardsAndSkipsDialogues() {
+  void turnsPatternAndReadingItemsIntoCardsAndSkipsDialogues() {
     List<PracticeItem> items = adapter.itemsFor("it");
 
-    assertThat(items).hasSize(2);
+    assertThat(items).hasSize(3);
     PracticeItem first = items.getFirst();
     assertThat(first.key()).isEqualTo(CardKey.of(ID, 1, 0));
     assertThat(first.type()).isEqualTo("substitution");
     assertThat(first.model()).isEqualTo("Yesterday I finished the login page.");
     assertThat(first.answers()).containsExactly("Yesterday I fixed the bug.");
+    assertThat(first.options()).isEmpty();
+    PracticeItem reading = items.get(2);
+    assertThat(reading.key()).isEqualTo(CardKey.of(ID, 2, 0));
+    assertThat(reading.type()).isEqualTo("reading");
+    assertThat(reading.passage()).isEqualTo("The stand-up lasts ten minutes.");
+    assertThat(reading.options()).containsExactly("TRUE", "FALSE", "NOT GIVEN");
     assertThat(adapter.itemsFor("business")).isEmpty();
   }
 

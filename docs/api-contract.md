@@ -28,17 +28,19 @@ authentication.
 
 ### GET /api/practice/cards?track={business|it|ielts}&limit={1-50, default 10}
 
-Due reviews first (oldest first), then cards the learner has never answered. Only pattern
-drills are cards; dialogues are not. Answers are never sent.
+Due reviews first (oldest first), then cards the learner has never answered. Pattern drills
+and reading questions are cards; dialogues are not. Answers are never sent.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | cardKey | string | `<contentId>:<drillIndex>:<itemIndex>` |
 | title | string | content item title |
-| type | `substitution` \| `transformation` \| `expansion` \| `translation` \| `response` | |
+| type | `substitution` \| `transformation` \| `expansion` \| `translation` \| `response` \| `reading` | |
 | instruction | string | |
 | model | string \| null | model sentence, if the drill has one |
+| passage | string \| null | reading passage (paragraphs separated by a blank line) |
 | cue | string | |
+| options | string[] | empty for typed answers; reading questions list their choices |
 
 ### POST /api/practice/answers
 
@@ -46,7 +48,7 @@ Request `{ "cardKey": string, "answer": string (1-1000 chars) }`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| verdict | `correct` \| `close` \| `wrong` | case, spacing and final punctuation are ignored; `close` = a typing slip |
+| verdict | `correct` \| `close` \| `wrong` | case, spacing and final punctuation are ignored; `close` = a typing slip (never for cards with options) |
 | expected | string | the accepted answer closest to the learner's |
 | box | 0-5 | Leitner box after this answer (correct +1, close same, wrong 0) |
 | nextReviewAt | string (ISO-8601 instant) | box 1-5 wait 1/3/7/14/30 days; wrong: 10 minutes |

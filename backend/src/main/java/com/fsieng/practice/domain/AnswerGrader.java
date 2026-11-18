@@ -28,6 +28,20 @@ public final class AnswerGrader {
     return new Grade(verdict(bestDistance, normalize(best).length()), best);
   }
 
+  /** Closed questions: the chosen option is right or wrong, never "close". */
+  public Grade gradeChoice(String choice, List<String> accepted) {
+    if (accepted.isEmpty()) {
+      throw new InvalidPracticeException("nothing to grade against");
+    }
+    String given = normalize(choice);
+    for (String candidate : accepted) {
+      if (normalize(candidate).equals(given)) {
+        return new Grade(Verdict.CORRECT, candidate);
+      }
+    }
+    return new Grade(Verdict.WRONG, accepted.getFirst());
+  }
+
   private static Verdict verdict(int distance, int length) {
     if (distance == 0) {
       return Verdict.CORRECT;

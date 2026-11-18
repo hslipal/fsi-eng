@@ -8,7 +8,9 @@ describe('practice schemas', () => {
       type: 'response',
       instruction: 'Reply.',
       model: null,
+      passage: null,
       cue: 'Any blockers?',
+      options: [],
     };
     expect(CardSchema.safeParse(card).success).toBe(true);
   });

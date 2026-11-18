@@ -1,0 +1,95 @@
+{
+  "id": "b068398f-4073-4887-892f-d9c75e4633cc",
+  "track": "ielts",
+  "title": "Reading: rooftop gardens in crowded cities",
+  "level": "band 6.0",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "reading",
+      "instruction": "Do the statements agree with the information in the passage? Choose TRUE, FALSE or NOT GIVEN.",
+      "passage": "In many crowded cities, flat roofs are among the last unused spaces. Over the past two decades, a growing number of building owners have covered them with soil and plants. Supporters say these rooftop gardens do more than look pleasant: they can lower the temperature inside the building, slow the flow of rainwater into drains, and give insects and birds a place to feed.\n\nThe cooling effect is the most widely studied benefit. A layer of soil and plants shades the roof and releases water vapour, so less heat reaches the rooms below. The effect is strongest on one- or two-storey buildings, where the roof is a large share of the outer surface; on tall towers, most heat enters through the walls and windows instead.\n\nRooftop gardens are not cheap. The roof must be strong enough to carry wet soil, which can weigh several hundred kilograms per square metre, and a waterproof layer is needed to protect the building. For this reason, many projects begin with a structural survey, and some older roofs cannot be converted at all.\n\nMaintenance is another concern. Plants on an exposed roof face strong wind and direct sun, so owners often choose hardy, low-growing species that need little watering. Some cities now offer grants that cover part of the installation cost, but the conditions vary from place to place.",
+      "items": [
+        {
+          "cue": "Supporters believe rooftop gardens can help wildlife.",
+          "options": [
+            "TRUE",
+            "FALSE",
+            "NOT GIVEN"
+          ],
+          "answers": [
+            "TRUE"
+          ]
+        },
+        {
+          "cue": "The cooling effect of a rooftop garden is greatest on tall buildings.",
+          "options": [
+            "TRUE",
+            "FALSE",
+            "NOT GIVEN"
+          ],
+          "answers": [
+            "FALSE"
+          ]
+        },
+        {
+          "cue": "Any old roof can be turned into a garden once it has been surveyed.",
+          "options": [
+            "TRUE",
+            "FALSE",
+            "NOT GIVEN"
+          ],
+          "answers": [
+            "FALSE"
+          ]
+        },
+        {
+          "cue": "Rooftop gardens increase the market value of a building.",
+          "options": [
+            "TRUE",
+            "FALSE",
+            "NOT GIVEN"
+          ],
+          "answers": [
+            "NOT GIVEN"
+          ]
+        },
+        {
+          "cue": "Grants for rooftop gardens are offered on the same terms in every city.",
+          "options": [
+            "TRUE",
+            "FALSE",
+            "NOT GIVEN"
+          ],
+          "answers": [
+            "FALSE"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "reading",
+      "instruction": "Choose the correct letter, A, B, C or D.",
+      "passage": "In many crowded cities, flat roofs are among the last unused spaces. Over the past two decades, a growing number of building owners have covered them with soil and plants. Supporters say these rooftop gardens do more than look pleasant: they can lower the temperature inside the building, slow the flow of rainwater into drains, and give insects and birds a place to feed.\n\nThe cooling effect is the most widely studied benefit. A layer of soil and plants shades the roof and releases water vapour, so less heat reaches the rooms below. The effect is strongest on one- or two-storey buildings, where the roof is a large share of the outer surface; on tall towers, most heat enters through the walls and windows instead.\n\nRooftop gardens are not cheap. The roof must be strong enough to carry wet soil, which can weigh several hundred kilograms per square metre, and a waterproof layer is needed to protect the building. For this reason, many projects begin with a structural survey, and some older roofs cannot be converted at all.\n\nMaintenance is another concern. Plants on an exposed roof face strong wind and direct sun, so owners often choose hardy, low-growing species that need little watering. Some cities now offer grants that cover part of the installation cost, but the conditions vary from place to place.",
+      "items": [
+        {
+          "cue": "Why is the cooling effect smaller on tall towers?",
+          "options": [
+            "A. Their roofs are too weak to carry soil.",
+            "B. Most heat enters through the walls and windows.",
+            "C. Plants cannot survive strong wind at that height.",
+            "D. Their owners rarely apply for grants."
+          ],
+          "answers": [
+            "B. Most heat enters through the walls and windows."
+          ]
+        }
+      ]
+    }
+  ]
+}
