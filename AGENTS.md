@@ -127,6 +127,9 @@ change the other **in the same PR** and update `docs/api-contract.md`.
   out of `_drafts/` or add `reviewed_by` yourself: that is the admin's review step.
 - Copyrighted test material (license `dev-only`) lives ONLY in the git-ignored `content-dev/`
   folder. Never commit it, never copy it into `content/`, never change its license yourself.
+- Dev-only material is loaded only with the `dev` profile (`fsi.content.include-dev-only=true`
+  lives in `application-dev.properties` and nowhere else; `verify.sh content` checks it). Any
+  dev-only item shown in the UI is labelled as development material.
 - LLM and speech calls go to DeepSeek ONLY through `<module>/adapter/out/llm/` and
   `<module>/adapter/out/asr/`. Domain and application code use the `ScoringPort`,
   `GenerationPort` and `TranscriptionPort` interfaces. The frontend never calls a model; it calls

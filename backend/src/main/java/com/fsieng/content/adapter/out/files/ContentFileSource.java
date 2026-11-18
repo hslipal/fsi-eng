@@ -19,7 +19,10 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Reads content/<track>/*.json. Files under content/_drafts/ wait for review and are skipped. */
+/**
+ * Reads content files: exactly {@code <root>/<track>/*.json}. Files under _drafts/ wait for review
+ * and are skipped; JSON deeper in a track folder (e.g. an audio manifest) is not content.
+ */
 public class ContentFileSource implements ReadContentFilesPort {
 
   private static final String DRAFTS = "_drafts";
@@ -42,6 +45,7 @@ public class ContentFileSource implements ReadContentFilesPort {
           .filter(Files::isRegularFile)
           .filter(path -> path.getFileName().toString().endsWith(".json"))
           .filter(path -> !root.relativize(path).startsWith(DRAFTS))
+          .filter(path -> root.relativize(path).getNameCount() == 2)
           .sorted()
           .map(this::read)
           .toList();

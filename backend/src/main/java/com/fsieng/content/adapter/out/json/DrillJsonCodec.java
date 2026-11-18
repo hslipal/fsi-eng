@@ -14,6 +14,7 @@ public final class DrillJsonCodec {
 
   private static final String DIALOGUE = "dialogue";
   private static final String READING = "reading";
+  private static final String SPEAKING = "speaking";
 
   private final JsonMapper mapper;
 
@@ -43,6 +44,13 @@ public final class DrillJsonCodec {
           required(json.lines(), "dialogue lines").stream().map(DrillJsonCodec::toLine).toList();
       return new Drill.Dialogue(lines);
     }
+    if (SPEAKING.equals(type)) {
+      List<Drill.SpeakingPrompt> prompts =
+          required(json.items(), "speaking questions").stream()
+              .map(DrillJsonCodec::toPrompt)
+              .toList();
+      return new Drill.Speaking(required(json.instruction(), "speaking instruction"), prompts);
+    }
     List<Drill.Item> items =
         required(json.items(), "drill items").stream().map(DrillJsonCodec::toItem).toList();
     if (READING.equals(type)) {
@@ -61,6 +69,14 @@ public final class DrillJsonCodec {
   private static Drill.Line toLine(DrillJson.LineJson line) {
     return new Drill.Line(
         required(line.speaker(), "dialogue speaker"), required(line.text(), "dialogue text"));
+  }
+
+  private static Drill.SpeakingPrompt toPrompt(DrillJson.ItemJson item) {
+    return new Drill.SpeakingPrompt(
+        required(item.cue(), "speaking question"),
+        required(item.part(), "speaking part"),
+        item.audio(),
+        item.seconds());
   }
 
   private static Drill.Item toItem(DrillJson.ItemJson item) {
@@ -87,6 +103,14 @@ public final class DrillJsonCodec {
               null,
               pattern.items().stream().map(DrillJsonCodec::toJson).toList(),
               null);
+      case Drill.Speaking speaking ->
+          new DrillJson(
+              SPEAKING,
+              speaking.instruction(),
+              null,
+              null,
+              speaking.prompts().stream().map(DrillJsonCodec::toJson).toList(),
+              null);
       case Drill.Reading reading ->
           new DrillJson(
               READING,
@@ -100,6 +124,11 @@ public final class DrillJsonCodec {
 
   private static DrillJson.LineJson toJson(Drill.Line line) {
     return new DrillJson.LineJson(line.speaker(), line.text());
+  }
+
+  private static DrillJson.ItemJson toJson(Drill.SpeakingPrompt prompt) {
+    return new DrillJson.ItemJson(
+        prompt.question(), null, null, prompt.part(), prompt.audio(), prompt.seconds());
   }
 
   private static DrillJson.ItemJson toJson(Drill.Item item) {

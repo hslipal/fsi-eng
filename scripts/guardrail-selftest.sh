@@ -70,7 +70,17 @@ content_cases() {
     "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\", \"drills\": [{ \"type\": \"reading\", \"instruction\": \"Choose.\", \"passage\": \"Text.\", \"items\": [{ \"cue\": \"q\", \"options\": [\"TRUE\", \"FALSE\"], \"answers\": [\"MAYBE\"] }] }] }" \
     "$ROOT" "$check" "invalid-drill"
 
+  expect_caught "dev-only material switched on outside the dev profile" \
+    "$ROOT/backend/src/main/resources/application-aibad.properties" \
+    "fsi.content.include-dev-only=true" \
+    "$ROOT" "$check" "dev-only-enabled-outside-dev-profile"
+
   if git -C "$ROOT" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    local big="backend/src/test/resources/content-dev-fixture/aiBadBig.json"
+    expect_caught "real-sized dev-only file hidden among test fixtures" "$ROOT/$big" \
+      "{ \"license\": { \"kind\": \"dev-only\" }, \"padding\": \"$(printf 'x%.0s' $(seq 1 5000))\" }" \
+      "$ROOT" "git add -N $big && $check; s=\$?; git rm -q --cached $big; exit \$s" \
+      "dev-only-content-tracked"
     local f="docs/aiBadDevOnly.json"
     expect_caught "dev-only file committed to Git" "$ROOT/$f" \
       '{ "license": { "kind": "dev-only" } }' \

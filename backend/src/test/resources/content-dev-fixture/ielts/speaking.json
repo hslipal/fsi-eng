@@ -1,0 +1,18 @@
+{
+  "id": "9a1b2c3d-0000-4000-8000-0000000000dd",
+  "track": "ielts",
+  "title": "Speaking samples (dev-only fixture)",
+  "level": "band 6.5",
+  "source": { "note": "test fixture" },
+  "license": { "kind": "dev-only" },
+  "drills": [
+    {
+      "type": "speaking",
+      "instruction": "Answer aloud.",
+      "items": [
+        { "cue": "Do you like your job?", "part": 1, "audio": "ielts/speaking-audio/q1.mp3", "seconds": 16.2 },
+        { "cue": "Describe a natural place", "part": 2 }
+      ]
+    }
+  ]
+}

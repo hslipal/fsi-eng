@@ -65,27 +65,87 @@ describe('IeltsPanel', () => {
     expect(screen.getByText('已写 0 词（建议至少 150 词）')).toBeInTheDocument();
   });
 
+  const prompts = [
+    {
+      key: 'dev:0:0',
+      part: 1,
+      question: 'Do you like your job?',
+      hasSample: true,
+      sampleSeconds: 16.2,
+      devOnly: true,
+    },
+    {
+      key: 'dev:0:1',
+      part: 2,
+      question: 'Describe a natural place',
+      hasSample: false,
+      sampleSeconds: null,
+      devOnly: false,
+    },
+  ];
+
   it('scores a speaking recording and says pronunciation was not scored', async () => {
     const sent: { url: string; init: RequestInit | undefined }[] = [];
     stubFetchRoutes((url, init) => {
       sent.push({ url, init });
-      return { status: 200, body: speakingScore };
+      return url === '/api/content/speaking-prompts'
+        ? { status: 200, body: prompts }
+        : { status: 200, body: speakingScore };
     });
     const user = userEvent.setup();
     render(<IeltsPanel />);
 
     await user.click(screen.getByRole('tab', { name: '口语' }));
-    await user.selectOptions(screen.getByLabelText('题目'), '2');
+    expect(await screen.findByRole('note')).toHaveTextContent('仅限开发环境使用');
+    expect(screen.getByLabelText('示范回答')).toHaveAttribute(
+      'src',
+      '/api/content/speaking-prompts/dev%3A0%3A0/sample',
+    );
+    expect(screen.getByText('示范回答（16 秒）')).toBeInTheDocument();
     await user.upload(
-      screen.getByLabelText('录音文件（最长 2 分钟、8 MB 以内）'),
+      screen.getByLabelText('你的录音（最长 2 分钟、8 MB 以内）'),
       new File([new Uint8Array([1, 2, 3])], 'answer.webm', { type: 'audio/webm' }),
     );
     await user.click(screen.getByRole('button', { name: '估分' }));
 
     expect(await screen.findByText('发音：未评分（语音转文字无法判断发音）')).toBeInTheDocument();
     expect(screen.getByText('识别出的回答：I prefer working from home.')).toBeInTheDocument();
-    expect(sent.at(-1)?.url).toBe('/api/assessment/speaking');
-    expect(sent.at(-1)?.init?.body).toBeInstanceOf(FormData);
+    const upload = sent.at(-1);
+    expect(upload?.url).toBe('/api/assessment/speaking');
+    const form = upload?.init?.body;
+    expect(form).toBeInstanceOf(FormData);
+    if (form instanceof FormData) {
+      expect(form.get('part')).toBe('1');
+      expect(form.get('question')).toBe('Do you like your job?');
+    }
+  });
+
+  it('switches to Part 2 questions, which have no sample here', async () => {
+    stubFetchRoutes(() => ({ status: 200, body: prompts }));
+    const user = userEvent.setup();
+    render(<IeltsPanel />);
+
+    await user.click(screen.getByRole('tab', { name: '口语' }));
+    await user.selectOptions(await screen.findByLabelText('部分'), '2');
+
+    expect(screen.getByRole('option', { name: 'Describe a natural place' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('示范回答')).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('部分'), '3');
+    expect(screen.getByText('这个部分没有题目。')).toBeInTheDocument();
+  });
+
+  it('says when there are no speaking questions or they cannot be loaded', async () => {
+    stubFetchRoutes(() => ({ status: 200, body: [] }));
+    const user = userEvent.setup();
+    const { unmount } = render(<IeltsPanel />);
+    await user.click(screen.getByRole('tab', { name: '口语' }));
+    expect(await screen.findByText('还没有可用的口语题目。')).toBeInTheDocument();
+    unmount();
+
+    stubFetchRoutes(() => ({ status: 500, body: {} }));
+    render(<IeltsPanel />);
+    await user.click(screen.getByRole('tab', { name: '口语' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('口语题目加载失败');
   });
 
   it('explains when AI scoring is unavailable', async () => {

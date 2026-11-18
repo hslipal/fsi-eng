@@ -21,6 +21,30 @@ Unknown track → `400` with an RFC 9457 problem detail.
 Backend: `ContentItemResponse`. Frontend: `ContentItemSchema`
 (`frontend/src/features/library/model/contentItem.ts`).
 
+## Speaking questions
+
+### GET /api/content/speaking-prompts
+
+IELTS speaking questions from published content; with the `dev` profile also dev-only
+(copyrighted, unlicensed) material from `content-dev/`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| key | string | `<contentId>:<drillIndex>:<promptIndex>` |
+| part | 1 \| 2 \| 3 | |
+| question | string | |
+| hasSample | boolean | a recorded sample answer exists |
+| sampleSeconds | number \| null | length of the sample |
+| devOnly | boolean | true = development material, must be labelled as such |
+
+### GET /api/content/speaking-prompts/{key}/sample
+
+The sample recording (`audio/mpeg`, …). Unknown key, no sample, or dev-only without the `dev`
+profile → `404`.
+
+Backend: `SpeakingPromptResponse`. Frontend: `SpeakingPromptSchema`
+(`frontend/src/features/ielts/model/assessment.ts`).
+
 ## Practice
 
 Until login exists the learner is the `X-Learner-Id` header (default `local`). This is not

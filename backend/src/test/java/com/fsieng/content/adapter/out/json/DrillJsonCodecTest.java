@@ -37,7 +37,12 @@ class DrillJsonCodecTest {
                     new Drill.Item(
                         "Gardens warm buildings.",
                         List.of("FALSE"),
-                        List.of("TRUE", "FALSE", "NOT GIVEN")))));
+                        List.of("TRUE", "FALSE", "NOT GIVEN")))),
+            new Drill.Speaking(
+                "Answer aloud.",
+                List.of(
+                    new Drill.SpeakingPrompt("Do you like your job?", 1, "ielts/a/q1.mp3", 16.2),
+                    new Drill.SpeakingPrompt("Describe a natural place", 2, null, null))));
 
     assertThat(codec.decode(codec.encode(drills))).isEqualTo(drills);
   }

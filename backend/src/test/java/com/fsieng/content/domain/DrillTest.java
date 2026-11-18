@@ -69,4 +69,24 @@ class DrillTest {
     assertThatThrownBy(() -> new Drill.Reading("Choose.", "Passage.", List.of()))
         .isInstanceOf(InvalidContentException.class);
   }
+
+  @Test
+  void speakingPromptsNeedAPartAndASafeAudioPath() {
+    Drill.SpeakingPrompt prompt =
+        new Drill.SpeakingPrompt("Do you like your job?", 1, "ielts/audio/q1.mp3", 16.2);
+
+    assertThat(new Drill.Speaking("Answer aloud.", List.of(prompt)).prompts()).hasSize(1);
+    assertThat(new Drill.SpeakingPrompt("Describe a place", 2, null, null).audio()).isNull();
+    for (String unsafe :
+        List.of("../secret.mp3", "/etc/passwd", "C:\\x.mp3", "a/../../b.mp3", " ")) {
+      assertThatThrownBy(() -> new Drill.SpeakingPrompt("q", 1, unsafe, null))
+          .isInstanceOf(InvalidContentException.class);
+    }
+    assertThatThrownBy(() -> new Drill.SpeakingPrompt("q", 4, null, null))
+        .isInstanceOf(InvalidContentException.class);
+    assertThatThrownBy(() -> new Drill.SpeakingPrompt("q", 0, null, null))
+        .isInstanceOf(InvalidContentException.class);
+    assertThatThrownBy(() -> new Drill.Speaking("Answer aloud.", List.of()))
+        .isInstanceOf(InvalidContentException.class);
+  }
 }

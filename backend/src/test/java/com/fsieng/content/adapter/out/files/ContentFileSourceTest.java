@@ -52,6 +52,7 @@ class ContentFileSourceTest {
         "_drafts/it/draft.json",
         item("4f2a9c1e-5b7d-4e8a-9c21-7d4e5f6a8b90", "{\"kind\": \"generated\"}", ""));
     write("README.md", "# not content");
+    write("it/audio/manifest.json", "[{\"file\": \"q1.mp3\"}]");
 
     List<ContentItem> items = new ContentFileSource(root, JSON).readAll();
 

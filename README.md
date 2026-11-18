@@ -31,13 +31,16 @@ The first backend build downloads Maven dependencies into the `m2` Docker volume
 ```bash
 docker compose up -d postgres
 docker compose --profile tools run --rm --service-ports maven \
-  mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+  mvn spring-boot:run -Dspring-boot.run.profiles=postgres,dev
 (cd frontend && npm run dev)                # http://localhost:5173, proxies /api to :8080
 ```
 
 AI scoring (IELTS writing/speaking) needs `DEEPSEEK_API_KEY`: put `DEEPSEEK_API_KEY=...` in a
 git-ignored `.env` file next to `docker-compose.yml`. Without it the assessment endpoints answer
 503; everything else works.
+
+Profile `dev` also loads copyrighted, not-yet-licensed material from `content-dev/` (e.g. the IELTS
+speaking sample answers). Never use it in production.
 
 Without a profile the backend uses in-memory H2 in PostgreSQL mode (tests and the CI e2e run).
 Flyway migrations live in `backend/src/main/resources/db/migration`; CI also runs the backend
