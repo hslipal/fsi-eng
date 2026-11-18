@@ -151,7 +151,7 @@ class PracticeApiIntegrationTest {
         client
             .get()
             .uri("/api/practice/cards?track=business")
-            .header("X-Learner-Id", " ")
+            .header("X-Learner-Id", "x".repeat(101))
             .retrieve()
             .onStatus(HttpStatusCode::isError, (_, _) -> {})
             .toBodilessEntity()
