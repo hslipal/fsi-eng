@@ -22,7 +22,7 @@ export function WritingForm({ assessment }: { readonly assessment: AssessmentRun
         }
       }}
     >
-      <label>
+      <label className="field">
         题目
         <select
           value={promptId}
@@ -32,28 +32,31 @@ export function WritingForm({ assessment }: { readonly assessment: AssessmentRun
         >
           {WRITING_PROMPTS.map((candidate) => (
             <option key={candidate.id} value={candidate.id}>
-              {candidate.task === 'task-1' ? 'Task 1' : 'Task 2'} · {candidate.text.slice(0, 40)}…
+              {candidate.task === 'task-1' ? 'Task 1' : 'Task 2'}：{candidate.text.slice(0, 48)}…
             </option>
           ))}
         </select>
       </label>
-      <p>{prompt?.text}</p>
-      <label>
+      <p className="task-prompt">{prompt?.text}</p>
+      <label className="field">
         你的作文
         <textarea
-          rows={12}
+          rows={14}
+          spellCheck={false}
           value={essay}
           onChange={(event) => {
             setEssay(event.target.value);
           }}
         />
       </label>
-      <p>
+      <p className="word-count">
         已写 {words} 词（建议至少 {recommended} 词）
       </p>
-      <button type="submit" disabled={busy || words < MIN_WORDS}>
-        估分
-      </button>
+      <div className="actions">
+        <button className="button" type="submit" disabled={busy || words < MIN_WORDS}>
+          估分
+        </button>
+      </div>
     </form>
   );
 }

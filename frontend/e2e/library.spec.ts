@@ -22,6 +22,10 @@ test('the library shows the business track on first load', async ({ page }) => {
   }
 
   await page.goto('/');
+  await page
+    .getByRole('navigation', { name: '板块' })
+    .getByRole('button', { name: '素材库' })
+    .click();
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('FSI-Eng 英语操练');
   const library = page.getByRole('region', { name: '素材库' });

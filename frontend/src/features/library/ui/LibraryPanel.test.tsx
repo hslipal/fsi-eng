@@ -23,7 +23,9 @@ describe('LibraryPanel', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('加载中');
     const list = await screen.findByRole('list', { name: '已发布素材' });
-    expect(list).toHaveTextContent('Asking for a quote by Friday · ILR 2 · 原创生成');
+    expect(list).toHaveTextContent('Asking for a quote by Friday');
+    expect(list).toHaveTextContent('原创生成');
+    expect(list).toHaveTextContent('ILR 2');
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/content/items?track=business',
       expect.objectContaining({ method: 'GET' }),
