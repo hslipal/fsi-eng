@@ -26,11 +26,15 @@ interface RequestOptions {
   readonly signal?: AbortSignal;
 }
 
-async function request<T>(path: string, schema: z.ZodType<T>, init: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-  });
+const JSON_HEADERS = { Accept: 'application/json', 'Content-Type': 'application/json' };
+
+async function request<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  init: RequestInit,
+  headers: Record<string, string> = JSON_HEADERS,
+): Promise<T> {
+  const response = await fetch(path, { ...init, headers });
 
   if (!response.ok) {
     throw new HttpError(response.status, `${init.method ?? 'GET'} ${path} failed`);
@@ -58,4 +62,14 @@ export async function postJson<T>(
   schema: z.ZodType<T>,
 ): Promise<T> {
   return await request(path, schema, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+/** Multipart upload (e.g. an audio recording). The browser sets the multipart boundary. */
+export async function postForm<T>(path: string, form: FormData, schema: z.ZodType<T>): Promise<T> {
+  return await request(
+    path,
+    schema,
+    { method: 'POST', body: form },
+    { Accept: 'application/json' },
+  );
 }

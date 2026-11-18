@@ -35,6 +35,10 @@ docker compose --profile tools run --rm --service-ports maven \
 (cd frontend && npm run dev)                # http://localhost:5173, proxies /api to :8080
 ```
 
+AI scoring (IELTS writing/speaking) needs `DEEPSEEK_API_KEY`: put `DEEPSEEK_API_KEY=...` in a
+git-ignored `.env` file next to `docker-compose.yml`. Without it the assessment endpoints answer
+503; everything else works.
+
 Without a profile the backend uses in-memory H2 in PostgreSQL mode (tests and the CI e2e run).
 Flyway migrations live in `backend/src/main/resources/db/migration`; CI also runs the backend
 tests against a real PostgreSQL 18.

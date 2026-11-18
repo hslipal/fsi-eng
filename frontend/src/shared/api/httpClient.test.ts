@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { stubFetch } from '@/test/fetchStub';
-import { ContractError, getJson, HttpError, postJson } from './httpClient';
+import { ContractError, getJson, HttpError, postForm, postJson } from './httpClient';
 
 const Schema = z.object({ name: z.string() });
 
@@ -28,5 +28,16 @@ describe('httpClient', () => {
     const fetchMock = stubFetch(200, { name: 'saved' });
     await expect(postJson('/api/x', { a: 1 }, Schema)).resolves.toEqual({ name: 'saved' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('posts a form without forcing a JSON content type', async () => {
+    const fetchMock = stubFetch(200, { name: 'uploaded' });
+    const form = new FormData();
+    form.append('part', '1');
+    await expect(postForm('/api/x', form, Schema)).resolves.toEqual({ name: 'uploaded' });
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/x',
+      expect.objectContaining({ body: form, headers: { Accept: 'application/json' } }),
+    );
   });
 });

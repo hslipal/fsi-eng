@@ -1,0 +1,15 @@
+{
+  "id": "recorded-1",
+  "object": "chat.completion",
+  "model": "deepseek-chat",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "{\"criteria\":[{\"criterion\":\"task-response\",\"band\":6.0,\"comment\":\"立场清楚，但第二个论点缺少例子。\"},{\"criterion\":\"coherence-cohesion\",\"band\":6.5,\"comment\":\"段落划分合理。\"},{\"criterion\":\"lexical-resource\",\"band\":6.0,\"comment\":\"'very important' 重复了三次。\"},{\"criterion\":\"grammatical-range-accuracy\",\"band\":5.5,\"comment\":\"主谓一致错误：'people thinks'。\"}],\"summary\":\"先补充论据，再练习复合句。\"}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "{\"criteria\":[{\"criterion\":\"task-response\",\"band\":9.7,\"comment\":\"x\"}],\"summary\":\"\"}"
+      }
+    }
+  ]
+}
