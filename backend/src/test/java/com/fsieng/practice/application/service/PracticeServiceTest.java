@@ -41,7 +41,19 @@ class PracticeServiceTest {
         List.of("Answer " + index + "."));
   }
 
-  private final List<PracticeItem> items = List.of(item(0), item(1), item(2), item(3));
+  private static final PracticeItem CHOICE =
+      new PracticeItem(
+          CardKey.of(new UUID(0L, 2L), 0, 0),
+          "Rooftop gardens",
+          "reading",
+          "TRUE, FALSE or NOT GIVEN?",
+          null,
+          "Passage text.",
+          "The first garden opened in 2010.",
+          List.of("TRUE", "FALSE", "NOT GIVEN"),
+          List.of("FALSE"));
+
+  private final List<PracticeItem> items = List.of(item(0), item(1), item(2), item(3), CHOICE);
 
   private final DrillCatalogPort catalog =
       new DrillCatalogPort() {
@@ -92,7 +104,7 @@ class PracticeServiceTest {
 
     List<PracticeItem> cards = service.dueCards(LEARNER, "business", 10);
 
-    assertThat(cards).containsExactly(items.get(3), items.get(2), items.get(1));
+    assertThat(cards).containsExactly(items.get(3), items.get(2), items.get(1), CHOICE);
   }
 
   @Test
@@ -127,5 +139,13 @@ class PracticeServiceTest {
     assertThatThrownBy(() -> service.submit(LEARNER, unknown, "x"))
         .isInstanceOf(UnknownCardException.class)
         .hasMessageContaining("nope");
+  }
+
+  @Test
+  void readingQuestionsAreGradedStrictly() {
+    assertThat(service.submit(LEARNER, CHOICE.key(), "false").grade().verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(service.submit(LEARNER, CHOICE.key(), "TRUE").grade().verdict())
+        .isEqualTo(Verdict.WRONG);
   }
 }

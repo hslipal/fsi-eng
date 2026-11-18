@@ -9,6 +9,13 @@ function Prompt({ card }: { readonly card: Card }): ReactElement {
       </p>
       <p>{card.instruction}</p>
       {card.model === null ? null : <p>例句：{card.model}</p>}
+      {card.passage === null ? null : (
+        <blockquote aria-label="阅读文章">
+          {card.passage.split('\n\n').map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </blockquote>
+      )}
       <p>
         提示：<strong>{card.cue}</strong>
       </p>
@@ -32,19 +39,51 @@ export function QuestionView({ card, onSubmit }: QuestionProps): ReactElement {
       }}
     >
       <Prompt card={card} />
-      <label>
-        你的答案
-        <input
-          value={answer}
-          onChange={(event) => {
-            setAnswer(event.target.value);
-          }}
-        />
-      </label>
+      {card.options.length > 0 ? (
+        <ChoiceInput options={card.options} value={answer} onChange={setAnswer} />
+      ) : (
+        <label>
+          你的答案
+          <input
+            value={answer}
+            onChange={(event) => {
+              setAnswer(event.target.value);
+            }}
+          />
+        </label>
+      )}
       <button type="submit" disabled={answer.trim().length === 0}>
         提交
       </button>
     </form>
+  );
+}
+
+interface ChoiceProps {
+  readonly options: readonly string[];
+  readonly value: string;
+  readonly onChange: (value: string) => void;
+}
+
+function ChoiceInput({ options, value, onChange }: ChoiceProps): ReactElement {
+  return (
+    <fieldset>
+      <legend>选择答案</legend>
+      {options.map((option) => (
+        <label key={option}>
+          <input
+            type="radio"
+            name="choice"
+            value={option}
+            checked={value === option}
+            onChange={() => {
+              onChange(option);
+            }}
+          />
+          {option}
+        </label>
+      ))}
+    </fieldset>
   );
 }
 

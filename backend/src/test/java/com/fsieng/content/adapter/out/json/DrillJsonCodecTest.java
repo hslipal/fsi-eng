@@ -15,7 +15,7 @@ class DrillJsonCodecTest {
   private final DrillJsonCodec codec = new DrillJsonCodec(JsonMapper.builder().build());
 
   @Test
-  void roundTripsDialoguesAndPatternDrills() {
+  void roundTripsEveryDrillKind() {
     List<Drill> drills =
         List.of(
             new Drill.Dialogue(
@@ -29,7 +29,15 @@ class DrillJsonCodecTest {
                 List.of(
                     new Drill.Item(
                         "Your price is too high.",
-                        List.of("We were hoping for something closer to our budget.")))));
+                        List.of("We were hoping for something closer to our budget.")))),
+            new Drill.Reading(
+                "TRUE, FALSE or NOT GIVEN?",
+                "Rooftop gardens cool buildings.",
+                List.of(
+                    new Drill.Item(
+                        "Gardens warm buildings.",
+                        List.of("FALSE"),
+                        List.of("TRUE", "FALSE", "NOT GIVEN")))));
 
     assertThat(codec.decode(codec.encode(drills))).isEqualTo(drills);
   }
@@ -41,6 +49,13 @@ class DrillJsonCodecTest {
 
   @Test
   void rejectsDrillsWithoutRequiredParts() {
+    assertThatThrownBy(() -> codec.decode("[{\"type\":\"reading\",\"items\":[]}]"))
+        .isInstanceOf(InvalidContentException.class)
+        .hasMessageContaining("reading instruction");
+    assertThatThrownBy(
+            () -> codec.decode("[{\"type\":\"reading\",\"instruction\":\"x\",\"items\":[]}]"))
+        .isInstanceOf(InvalidContentException.class)
+        .hasMessageContaining("reading passage");
     assertThatThrownBy(() -> codec.decode("[{\"instruction\":\"x\"}]"))
         .isInstanceOf(InvalidContentException.class)
         .hasMessageContaining("drill type");

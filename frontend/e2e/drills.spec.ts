@@ -15,7 +15,9 @@ test('a learner answers a substitution drill and sees feedback', async ({ page }
             type: 'substitution',
             instruction: 'Replace the document and the deadline.',
             model: 'Could you send me the quote by Friday?',
+            passage: null,
             cue: 'the contract / Monday',
+            options: [],
           },
         ],
       });

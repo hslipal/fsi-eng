@@ -42,9 +42,12 @@ against `content-policy.json`; the backend imports `content/<track>/*.json` into
   `licensed` (+ `grantId`). `dev-only` is **not allowed here**.
 - `reviewed_by`: an admin listed in `content-policy.json`; required outside `_drafts/`,
   forbidden inside it
-- `drills[].type`: `dialogue` (`lines`: speaker + text) or one of `substitution`,
-  `transformation`, `expansion`, `translation`, `response` (`instruction`, optional `model`,
-  `items`: `cue` + every accepted `answers`)
+- `drills[].type`:
+  - `dialogue`: `lines` (speaker + text), for listening and memorising; not graded
+  - `substitution` | `transformation` | `expansion` | `translation` | `response`:
+    `instruction`, optional `model`, `items` (`cue` + every accepted `answers`), typed answers
+  - `reading`: `instruction`, `passage`, `items` with `options` (e.g. `TRUE`/`FALSE`/`NOT GIVEN`
+    or A-D); every answer must be one of the options, and choices are graded strictly
 
 Copyrighted material used only for development (Cambridge IELTS past papers, BEC, commercial
 textbooks) goes in `content-dev/`, which is git-ignored and never loaded in production.

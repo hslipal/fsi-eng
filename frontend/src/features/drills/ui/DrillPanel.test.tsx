@@ -10,7 +10,9 @@ function card(index: number): Record<string, unknown> {
     type: 'substitution',
     instruction: 'Replace the document.',
     model: 'Could you send me the quote by Friday?',
+    passage: null,
     cue: index === 0 ? 'contract' : 'invoice',
+    options: [],
   };
 }
 
@@ -107,5 +109,43 @@ describe('DrillPanel', () => {
     await user.click(screen.getByRole('button', { name: '提交' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('出错了');
+  });
+
+  it('shows the passage and lets the learner pick an option for reading questions', async () => {
+    const reading = {
+      cardKey: 'gardens:0:0',
+      title: 'Rooftop gardens',
+      type: 'reading',
+      instruction: 'TRUE, FALSE or NOT GIVEN?',
+      model: null,
+      passage: 'First paragraph.\n\nSecond paragraph.',
+      cue: 'The first garden opened in 2010.',
+      options: ['TRUE', 'FALSE', 'NOT GIVEN'],
+    };
+    const fetchMock = stubPractice([reading], {
+      status: 200,
+      body: {
+        verdict: 'wrong',
+        expected: 'NOT GIVEN',
+        box: 0,
+        nextReviewAt: '2026-11-20T00:00:00Z',
+      },
+    });
+    const user = userEvent.setup();
+    render(<DrillPanel />);
+
+    const passage = await screen.findByRole('blockquote', { name: '阅读文章' });
+    expect(passage).toHaveTextContent('Second paragraph.');
+    expect(screen.queryByLabelText('你的答案')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'FALSE' }));
+    await user.click(screen.getByRole('button', { name: '提交' }));
+
+    expect(await screen.findByText('参考答案：NOT GIVEN')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/practice/answers',
+      expect.objectContaining({
+        body: JSON.stringify({ cardKey: 'gardens:0:0', answer: 'FALSE' }),
+      }),
+    );
   });
 });

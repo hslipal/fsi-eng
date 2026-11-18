@@ -50,4 +50,23 @@ class DrillTest {
     assertThatThrownBy(() -> DrillType.fromCode("dictation"))
         .isInstanceOf(InvalidContentException.class);
   }
+
+  @Test
+  void readingQuestionsNeedOptionsThatContainTheAnswer() {
+    List<String> tfng = List.of("TRUE", "FALSE", "NOT GIVEN");
+    Drill.Item question = new Drill.Item("Gardens cool roofs.", List.of("TRUE"), tfng);
+
+    assertThat(new Drill.Reading("Choose.", "Passage.", List.of(question)).items()).hasSize(1);
+    assertThatThrownBy(() -> new Drill.Item("q", List.of("MAYBE"), tfng))
+        .isInstanceOf(InvalidContentException.class)
+        .hasMessageContaining("not an option");
+    List<Drill.Item> typed = List.of(new Drill.Item("q", List.of("TRUE")));
+    assertThatThrownBy(() -> new Drill.Reading("Choose.", "Passage.", typed))
+        .isInstanceOf(InvalidContentException.class)
+        .hasMessageContaining("needs options");
+    assertThatThrownBy(() -> new Drill.Reading("Choose.", " ", List.of(question)))
+        .isInstanceOf(InvalidContentException.class);
+    assertThatThrownBy(() -> new Drill.Reading("Choose.", "Passage.", List.of()))
+        .isInstanceOf(InvalidContentException.class);
+  }
 }

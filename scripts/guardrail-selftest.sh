@@ -66,6 +66,10 @@ content_cases() {
     "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\", \"drills\": [{ \"type\": \"substitution\", \"instruction\": \"Replace it.\", \"items\": [{ \"cue\": \"contract\", \"answers\": [] }] }] }" \
     "$ROOT" "$check" "invalid-drill"
 
+  expect_caught "reading answer that is not one of the options" "$ROOT/content/aiBad.json" \
+    "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\", \"drills\": [{ \"type\": \"reading\", \"instruction\": \"Choose.\", \"passage\": \"Text.\", \"items\": [{ \"cue\": \"q\", \"options\": [\"TRUE\", \"FALSE\"], \"answers\": [\"MAYBE\"] }] }] }" \
+    "$ROOT" "$check" "invalid-drill"
+
   if git -C "$ROOT" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     local f="docs/aiBadDevOnly.json"
     expect_caught "dev-only file committed to Git" "$ROOT/$f" \

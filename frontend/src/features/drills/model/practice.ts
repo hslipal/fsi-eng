@@ -15,6 +15,7 @@ export const DRILL_TYPES = [
   'expansion',
   'translation',
   'response',
+  'reading',
 ] as const;
 export type DrillType = (typeof DRILL_TYPES)[number];
 
@@ -24,6 +25,7 @@ export const DRILL_TYPE_LABELS: Readonly<Record<DrillType, string>> = {
   expansion: '扩展操练',
   translation: '翻译操练',
   response: '情景回应',
+  reading: '阅读理解',
 };
 
 export const CardSchema = z.object({
@@ -32,7 +34,9 @@ export const CardSchema = z.object({
   type: z.enum(DRILL_TYPES),
   instruction: z.string(),
   model: z.string().nullable(),
+  passage: z.string().nullable(),
   cue: z.string(),
+  options: z.array(z.string()),
 });
 export type Card = z.infer<typeof CardSchema>;
 export const CardListSchema = z.array(CardSchema);

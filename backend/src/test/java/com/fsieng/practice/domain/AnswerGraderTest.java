@@ -68,4 +68,15 @@ class AnswerGraderTest {
     assertThat(Verdict.CLOSE.code()).isEqualTo("close");
     assertThat(Verdict.WRONG.code()).isEqualTo("wrong");
   }
+
+  @Test
+  void choicesAreRightOrWrongNeverClose() {
+    List<String> accepted = List.of("NOT GIVEN");
+
+    assertThat(grader.gradeChoice("not given", accepted).verdict()).isEqualTo(Verdict.CORRECT);
+    assertThat(grader.gradeChoice("B", List.of("A")).verdict()).isEqualTo(Verdict.WRONG);
+    assertThat(grader.gradeChoice("B", List.of("A")).expected()).isEqualTo("A");
+    assertThatThrownBy(() -> grader.gradeChoice("A", List.of()))
+        .isInstanceOf(InvalidPracticeException.class);
+  }
 }
