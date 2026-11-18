@@ -24,12 +24,13 @@ test('the library shows the business track on first load', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('FSI-Eng 英语操练');
-  await expect(page.getByRole('tab', { name: '商务英语' })).toHaveAttribute(
+  const library = page.getByRole('region', { name: '素材库' });
+  await expect(library.getByRole('tab', { name: '商务英语' })).toHaveAttribute(
     'aria-selected',
     'true',
   );
-  const list = page.getByRole('list', { name: '已发布素材' });
-  const empty = page.getByText('这个赛道还没有已发布的素材。');
+  const list = library.getByRole('list', { name: '已发布素材' });
+  const empty = library.getByText('这个赛道还没有已发布的素材。');
   await expect(list.or(empty)).toBeVisible();
   if (!fullstack) {
     await expect(list).toContainText('Asking for a quote by Friday');
