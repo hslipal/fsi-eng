@@ -1,0 +1,60 @@
+{
+  "id": "f1b56ff4-82d6-4abb-b086-aac5fd0febe8",
+  "track": "business",
+  "title": "Requesting a quote by a deadline",
+  "level": "ILR 1+",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "dialogue",
+      "lines": [
+        {
+          "speaker": "Buyer",
+          "text": "Hi Lena, could you send me a quote for 500 units by Friday?"
+        },
+        {
+          "speaker": "Supplier",
+          "text": "Of course. Do you need delivery included?"
+        },
+        {
+          "speaker": "Buyer",
+          "text": "Yes, please include delivery to our Shanghai warehouse."
+        },
+        {
+          "speaker": "Supplier",
+          "text": "No problem. I'll send it over by Thursday afternoon."
+        }
+      ]
+    },
+    {
+      "type": "substitution",
+      "instruction": "Replace the document and the deadline.",
+      "model": "Could you send me the quote by Friday?",
+      "items": [
+        {
+          "cue": "the contract / Monday",
+          "answers": [
+            "Could you send me the contract by Monday?"
+          ]
+        },
+        {
+          "cue": "the invoice / the end of the day",
+          "answers": [
+            "Could you send me the invoice by the end of the day?"
+          ]
+        },
+        {
+          "cue": "the updated price list / noon tomorrow",
+          "answers": [
+            "Could you send me the updated price list by noon tomorrow?"
+          ]
+        }
+      ]
+    }
+  ]
+}

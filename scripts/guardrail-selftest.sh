@@ -57,6 +57,14 @@ content_cases() {
     "{ $ok, \"source\": { \"generator\": \"deepseek\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"claude\" }" \
     "$ROOT" "$check" "reviewer-not-admin"
 
+  expect_caught "draft that claims to be reviewed" "$ROOT/content/_drafts/aiBad.json" \
+    "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\" }" \
+    "$ROOT" "$check" "draft-has-reviewer"
+
+  expect_caught "drill item without an answer" "$ROOT/content/aiBad.json" \
+    "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\", \"drills\": [{ \"type\": \"substitution\", \"instruction\": \"Replace it.\", \"items\": [{ \"cue\": \"contract\", \"answers\": [] }] }] }" \
+    "$ROOT" "$check" "invalid-drill"
+
   if git -C "$ROOT" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     local f="docs/aiBadDevOnly.json"
     expect_caught "dev-only file committed to Git" "$ROOT/$f" \

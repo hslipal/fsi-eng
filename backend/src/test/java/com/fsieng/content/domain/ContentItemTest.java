@@ -3,6 +3,7 @@ package com.fsieng.content.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,8 @@ class ContentItemTest {
         null,
         license,
         "ILR 2",
-        reviewedBy);
+        reviewedBy,
+        List.of());
   }
 
   @Test
@@ -40,9 +42,11 @@ class ContentItemTest {
   void titleAndLevelMustNotBeBlank() {
     ContentItemId id = new ContentItemId(UUID.randomUUID());
     License license = new License.DevOnly();
-    assertThatThrownBy(() -> new ContentItem(id, Track.IT, " ", null, license, "ILR 2", null))
+    assertThatThrownBy(
+            () -> new ContentItem(id, Track.IT, " ", null, license, "ILR 2", null, List.of()))
         .isInstanceOf(InvalidContentException.class);
-    assertThatThrownBy(() -> new ContentItem(id, Track.IT, "Title", null, license, "", null))
+    assertThatThrownBy(
+            () -> new ContentItem(id, Track.IT, "Title", null, license, "", null, List.of()))
         .isInstanceOf(InvalidContentException.class);
   }
 }

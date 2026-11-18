@@ -14,7 +14,14 @@ class ContentServiceTest {
 
   private static ContentItem item(String title, License license) {
     return new ContentItem(
-        new ContentItemId(UUID.randomUUID()), Track.IELTS, title, null, license, "6.5", "admin");
+        new ContentItemId(UUID.randomUUID()),
+        Track.IELTS,
+        title,
+        null,
+        license,
+        "6.5",
+        "admin",
+        List.of());
   }
 
   @Test

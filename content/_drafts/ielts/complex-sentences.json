@@ -1,0 +1,40 @@
+{
+  "id": "d553ddc0-ff2e-4dd6-84aa-54144c2c0d4b",
+  "track": "ielts",
+  "title": "Combining ideas into complex sentences (Writing Task 2)",
+  "level": "band 6.5",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "transformation",
+      "instruction": "Combine the two sentences with the word in brackets.",
+      "items": [
+        {
+          "cue": "Public transport is cheap. Many people still drive. (although)",
+          "answers": [
+            "Although public transport is cheap, many people still drive.",
+            "Many people still drive although public transport is cheap."
+          ]
+        },
+        {
+          "cue": "Cities are growing. Housing is becoming expensive. (as)",
+          "answers": [
+            "As cities are growing, housing is becoming expensive.",
+            "Housing is becoming expensive as cities are growing."
+          ]
+        },
+        {
+          "cue": "Remote work saves time. It can make people feel isolated. (while)",
+          "answers": [
+            "While remote work saves time, it can make people feel isolated."
+          ]
+        }
+      ]
+    }
+  ]
+}

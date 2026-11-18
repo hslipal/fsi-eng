@@ -1,0 +1,17 @@
+{
+  "id": "9a1b2c3d-0000-4000-8000-000000000001",
+  "track": "business",
+  "title": "Asking for a quote by Friday",
+  "level": "ILR 2",
+  "source": { "generator": "claude" },
+  "license": { "kind": "generated" },
+  "reviewed_by": "admin",
+  "drills": [
+    {
+      "type": "substitution",
+      "instruction": "Replace the document.",
+      "model": "Could you send me the quote by Friday?",
+      "items": [{ "cue": "contract", "answers": ["Could you send me the contract by Friday?"] }]
+    }
+  ]
+}

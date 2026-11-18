@@ -16,3 +16,4 @@
 /.gitattributes                              @hslipal
 /content-policy.json                         @hslipal
 /prompts/scoring/                            @hslipal
+/content/                                    @hslipal

@@ -1,0 +1,52 @@
+{
+  "id": "387b0fd6-3327-4228-9910-8742ef57dce8",
+  "track": "ielts",
+  "title": "Describing trends (Writing Task 1)",
+  "level": "band 6.0",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "substitution",
+      "instruction": "Replace the subject and the figures.",
+      "model": "Sales rose sharply from 20 to 45 million between 2010 and 2015.",
+      "items": [
+        {
+          "cue": "The number of users / 3 to 12 million",
+          "answers": [
+            "The number of users rose sharply from 3 to 12 million between 2010 and 2015."
+          ]
+        },
+        {
+          "cue": "Car ownership / 40% to 65%",
+          "answers": [
+            "Car ownership rose sharply from 40% to 65% between 2010 and 2015."
+          ]
+        }
+      ]
+    },
+    {
+      "type": "transformation",
+      "instruction": "Rewrite with a noun phrase: \"There was a ... in ...\".",
+      "items": [
+        {
+          "cue": "Sales rose sharply.",
+          "answers": [
+            "There was a sharp rise in sales."
+          ]
+        },
+        {
+          "cue": "Unemployment fell slightly.",
+          "answers": [
+            "There was a slight fall in unemployment.",
+            "There was a slight decrease in unemployment."
+          ]
+        }
+      ]
+    }
+  ]
+}

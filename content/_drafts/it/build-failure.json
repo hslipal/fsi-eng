@@ -1,0 +1,63 @@
+{
+  "id": "fa4b8e60-e916-4be2-999e-eec631f4c271",
+  "track": "it",
+  "title": "Explaining why a build fails",
+  "level": "ILR 2",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "substitution",
+      "instruction": "Replace the cause.",
+      "model": "The build fails because the integration test times out.",
+      "items": [
+        {
+          "cue": "a dependency is missing",
+          "answers": [
+            "The build fails because a dependency is missing."
+          ]
+        },
+        {
+          "cue": "the linter finds an unused import",
+          "answers": [
+            "The build fails because the linter finds an unused import."
+          ]
+        },
+        {
+          "cue": "the coverage is below the threshold",
+          "answers": [
+            "The build fails because the coverage is below the threshold."
+          ]
+        }
+      ]
+    },
+    {
+      "type": "transformation",
+      "instruction": "Turn the description into a commit message (imperative, no full stop).",
+      "items": [
+        {
+          "cue": "I fixed the null check in the parser.",
+          "answers": [
+            "Fix the null check in the parser"
+          ]
+        },
+        {
+          "cue": "I added retry logic to the HTTP client.",
+          "answers": [
+            "Add retry logic to the HTTP client"
+          ]
+        },
+        {
+          "cue": "I removed the unused config file.",
+          "answers": [
+            "Remove the unused config file"
+          ]
+        }
+      ]
+    }
+  ]
+}
