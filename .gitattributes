@@ -1,0 +1,5 @@
+# guardrails.lock pins SHA-256 hashes; keep LF everywhere so Windows checkouts hash the same.
+* text=auto eol=lf
+*.jar binary
+*.png binary
+*.wav binary

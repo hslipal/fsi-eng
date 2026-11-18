@@ -1,0 +1,42 @@
+# Local toolchain and database on Docker Desktop.
+#
+#   docker compose up -d postgres                     PostgreSQL 18 on localhost:5432
+#   ./scripts/mvn.sh -B verify                        Maven + JDK 25 in a container (used by verify.sh)
+#   docker compose run --rm --service-ports maven mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+#
+# The password below is for local development only. Put real values in a git-ignored .env file.
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: fsieng
+      POSTGRES_USER: ${FSI_DB_USER:-fsieng}
+      POSTGRES_PASSWORD: ${FSI_DB_PASSWORD:-fsieng-dev}
+    ports:
+      - '5432:5432'
+    volumes:
+      # PostgreSQL 18 images keep data under /var/lib/postgresql/<major>/docker
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${FSI_DB_USER:-fsieng} -d fsieng']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  maven:
+    image: maven:3.9-eclipse-temurin-25
+    profiles: ['tools']
+    working_dir: /workspace/backend
+    volumes:
+      - ./:/workspace
+      - m2:/root/.m2
+    ports:
+      - '8080:8080'
+    environment:
+      FSI_DB_URL: jdbc:postgresql://postgres:5432/fsieng
+      FSI_DB_USER: ${FSI_DB_USER:-fsieng}
+      FSI_DB_PASSWORD: ${FSI_DB_PASSWORD:-fsieng-dev}
+
+volumes:
+  pgdata:
+  m2:

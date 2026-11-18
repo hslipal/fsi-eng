@@ -1,0 +1,90 @@
+# Claude Code implements an issue under the guardrails; CI, not Claude, decides whether it is done.
+#
+# Trigger: a maintainer adds the label `claude` to an issue (only users with triage rights can add
+# labels, so untrusted issue authors cannot steer the agent on their own).
+# Requires the repository secret ANTHROPIC_API_KEY. Optional: CLAUDE_PR_TOKEN (see below).
+name: Claude task
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  implement:
+    if: github.event.label.name == 'claude'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Warm dependency caches
+        run: |
+          (cd backend && mvn -B -ntp verify)
+          (cd frontend && npm ci && npx playwright install --with-deps chromium)
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--max-turns 60'
+          prompt: |
+            You are working in a guardrailed repository. Read CLAUDE.md, AGENTS.md,
+            frontend/AGENTS.md and backend/AGENTS.md first and follow them exactly.
+
+            Implement GitHub issue #${{ github.event.issue.number }}:
+            Title: ${{ github.event.issue.title }}
+            ---
+            ${{ github.event.issue.body }}
+            ---
+
+            Rules:
+            - Do not modify any file listed in guardrails.lock.
+            - Add or update tests for every behaviour you change.
+            - Run ./scripts/verify.sh and iterate until it passes.
+            - Finish with a short summary: what changed, which tests cover it, and any rule
+              you think should change (do not change it yourself).
+
+      # Independent verification. The agent's own claim of success is not trusted.
+      - name: Verify (same script as CI)
+        run: ./scripts/verify.sh
+
+      - name: Open pull request
+        if: success()
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # PRs opened with the default GITHUB_TOKEN do not trigger other workflows.
+          # Provide a GitHub App / fine-grained token so CI runs on the PR.
+          token: ${{ secrets.CLAUDE_PR_TOKEN || github.token }}
+          branch: claude/issue-${{ github.event.issue.number }}
+          title: 'Claude: ${{ github.event.issue.title }}'
+          commit-message: 'feat: ${{ github.event.issue.title }} (closes #${{ github.event.issue.number }})'
+          body: |
+            Closes #${{ github.event.issue.number }}
+
+            `./scripts/verify.sh` passed in the generating job. Full CI runs on this PR.
+          labels: claude, needs-human-review
+          draft: true
+
+      - name: Report failure on the issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body \
+            "Claude could not produce a change that passes \`./scripts/verify.sh\`. See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

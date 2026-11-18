@@ -1,0 +1,39 @@
+{
+  // GUARDRAIL: the strictest practical TypeScript profile.
+  // Every flag below closes a hole that AI-generated code tends to fall into.
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": false,
+    "paths": { "@/*": ["./src/*"] },
+
+    /* Base strictness */
+    "strict": true,
+
+    /* Beyond `strict` */
+    "noUncheckedIndexedAccess": true, // arr[0] is T | undefined — no invented elements
+    "exactOptionalPropertyTypes": true, // { a?: string } does not accept { a: undefined }
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true, // forces obj["key"] for dynamic keys
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "forceConsistentCasingInFileNames": true,
+    "useUnknownInCatchVariables": true,
+    "erasableSyntaxOnly": true // no enums / namespaces / parameter properties
+  },
+  "include": ["src"]
+}

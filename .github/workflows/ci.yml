@@ -1,0 +1,185 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guardrails:
+    name: Guardrail integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: ./scripts/verify.sh guardrails
+      - run: ./scripts/verify.sh content
+
+  backend:
+    name: Backend (Error Prone · NullAway · ArchUnit · JUnit · JaCoCo)
+    needs: guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - run: ./scripts/verify.sh backend
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: backend-reports
+          path: |
+            backend/target/surefire-reports
+            backend/target/site/jacoco
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v5
+        with:
+          name: backend-jar
+          path: backend/target/fsi-eng-backend-*.jar
+
+  backend-postgres:
+    name: Backend on PostgreSQL 18 (Flyway migrations + integration tests)
+    needs: guardrails
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: fsieng
+          POSTGRES_USER: fsieng
+          POSTGRES_PASSWORD: fsieng-ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fsieng -d fsieng"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      FSI_DB_URL: jdbc:postgresql://localhost:5432/fsieng
+      FSI_DB_USER: fsieng
+      FSI_DB_PASSWORD: fsieng-ci
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - working-directory: backend
+        run: mvn -B -ntp test -Dspring.profiles.active=postgres
+
+  frontend:
+    name: Frontend (tsc strict · ESLint · dependency-cruiser · Vitest)
+    needs: guardrails
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run verify
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+          if-no-files-found: ignore
+
+  guardrail-selftest:
+    name: Guardrail self-test (inject bad code → must be rejected)
+    needs: guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: cd frontend && npm ci
+      - run: ./scripts/guardrail-selftest.sh
+
+  e2e:
+    name: E2E (Playwright, stubbed API)
+    needs: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: playwright-report-mock
+          path: frontend/playwright-report
+
+  e2e-fullstack:
+    name: E2E (Playwright → real Spring Boot)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/download-artifact@v5
+        with:
+          name: backend-jar
+          path: backend-dist
+      - name: Start backend
+        run: |
+          nohup java -jar backend-dist/fsi-eng-backend-*.jar > backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf 'http://localhost:8080/api/content/items?track=business' > /dev/null && exit 0
+            sleep 1
+          done
+          cat backend.log; exit 1
+      - working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          E2E_MODE=fullstack npm run e2e
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: playwright-report-fullstack
+          path: |
+            frontend/playwright-report
+            backend.log
