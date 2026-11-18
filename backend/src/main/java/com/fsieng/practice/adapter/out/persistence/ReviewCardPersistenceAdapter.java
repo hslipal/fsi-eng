@@ -32,14 +32,15 @@ public class ReviewCardPersistenceAdapter implements ReviewCardStorePort {
 
   @Override
   public void save(ReviewCard card) {
+    String learner = card.learner().value();
+    String key = card.key().value();
     ReviewCardEntity entity =
-        repository
-            .findByLearnerIdAndCardKey(card.learner().value(), card.key().value())
-            .orElseGet(
-                () ->
-                    new ReviewCardEntity(
-                        UUID.randomUUID(), card.learner().value(), card.key().value()));
+        repository.findByLearnerIdAndCardKey(learner, key).orElseGet(() -> newCard(learner, key));
     repository.save(entity.schedule(card.box(), card.dueAt()));
+  }
+
+  private static ReviewCardEntity newCard(String learner, String key) {
+    return new ReviewCardEntity(UUID.randomUUID(), learner, key);
   }
 
   private static ReviewCard toDomain(ReviewCardEntity entity) {
