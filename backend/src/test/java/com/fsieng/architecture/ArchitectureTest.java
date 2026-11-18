@@ -30,6 +30,7 @@ class ArchitectureTest {
   private static final String DOMAIN = "..domain..";
   private static final String APPLICATION = "..application..";
   private static final String WEB = "..adapter.in.web..";
+  private static final String OUTBOUND = "..adapter.out..";
   private static final String PERSISTENCE = "..adapter.out.persistence..";
   private static final String LLM = "..adapter.out.llm..";
   private static final String ASR = "..adapter.out.asr..";
@@ -46,18 +47,18 @@ class ArchitectureTest {
           .definedBy(APPLICATION)
           .layer("Web")
           .definedBy(WEB)
-          .layer("Persistence")
-          .definedBy(PERSISTENCE)
+          .layer("Outbound")
+          .definedBy(OUTBOUND)
           .layer("Config")
           .definedBy(CONFIG)
           .whereLayer("Web")
           .mayNotBeAccessedByAnyLayer()
-          .whereLayer("Persistence")
+          .whereLayer("Outbound")
           .mayOnlyBeAccessedByLayers("Config")
           .whereLayer("Application")
-          .mayOnlyBeAccessedByLayers("Web", "Persistence", "Config")
+          .mayOnlyBeAccessedByLayers("Web", "Outbound", "Config")
           .whereLayer("Domain")
-          .mayOnlyBeAccessedByLayers("Application", "Web", "Persistence", "Config");
+          .mayOnlyBeAccessedByLayers("Application", "Web", "Outbound", "Config");
 
   // ── 2. The core is framework-free ───────────────────────────────────────────────────
   @ArchTest

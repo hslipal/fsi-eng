@@ -1,0 +1,54 @@
+{
+  "id": "c9d48389-c1bf-4eec-b6e3-155bd519452f",
+  "track": "business",
+  "title": "Disagreeing politely in a negotiation",
+  "level": "ILR 2",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "transformation",
+      "instruction": "Say the same thing more diplomatically.",
+      "items": [
+        {
+          "cue": "Your price is too high.",
+          "answers": [
+            "I'm afraid the price is a little higher than we expected.",
+            "We were hoping for a price closer to our budget."
+          ]
+        },
+        {
+          "cue": "We can't accept these terms.",
+          "answers": [
+            "I'm not sure we can accept these terms as they stand.",
+            "These terms would be difficult for us to accept."
+          ]
+        },
+        {
+          "cue": "Your delivery date is too late.",
+          "answers": [
+            "Would it be possible to bring the delivery date forward?",
+            "Is there any flexibility on the delivery date?"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "response",
+      "instruction": "Respond to the counter-offer with a polite question.",
+      "items": [
+        {
+          "cue": "We can offer a 3% discount.",
+          "answers": [
+            "Thank you. Could you go up to 5% for an order of this size?",
+            "Thanks. Is there any room to go a little higher on the discount?"
+          ]
+        }
+      ]
+    }
+  ]
+}

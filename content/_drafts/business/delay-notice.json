@@ -1,0 +1,53 @@
+{
+  "id": "bfe35403-25bf-4f2c-92af-2e232a640881",
+  "track": "business",
+  "title": "Writing a short delay notice",
+  "level": "ILR 2",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "expansion",
+      "instruction": "Add the reason in brackets to the sentence.",
+      "items": [
+        {
+          "cue": "The shipment will arrive on 12 March. (a customs inspection)",
+          "answers": [
+            "The shipment will arrive on 12 March because of a customs inspection.",
+            "Because of a customs inspection, the shipment will arrive on 12 March."
+          ]
+        },
+        {
+          "cue": "We need to move the meeting to Thursday. (the client is travelling)",
+          "answers": [
+            "We need to move the meeting to Thursday because the client is travelling."
+          ]
+        }
+      ]
+    },
+    {
+      "type": "translation",
+      "instruction": "Translate into English.",
+      "items": [
+        {
+          "cue": "很抱歉通知您，交货将推迟一周。",
+          "answers": [
+            "I'm sorry to inform you that the delivery will be delayed by one week.",
+            "We regret to inform you that the delivery will be delayed by a week."
+          ]
+        },
+        {
+          "cue": "如有任何问题，请随时联系我。",
+          "answers": [
+            "Please feel free to contact me if you have any questions.",
+            "If you have any questions, please do not hesitate to contact me."
+          ]
+        }
+      ]
+    }
+  ]
+}

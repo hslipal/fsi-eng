@@ -1,0 +1,60 @@
+{
+  "id": "d8b56a4c-cb05-41e8-9ae9-0b20ca0c1f4e",
+  "track": "it",
+  "title": "Giving a daily stand-up update",
+  "level": "ILR 1+",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "dialogue",
+      "lines": [
+        {
+          "speaker": "Dev",
+          "text": "Yesterday I finished the login page. Today I'm writing the tests for it."
+        },
+        {
+          "speaker": "Lead",
+          "text": "Any blockers?"
+        },
+        {
+          "speaker": "Dev",
+          "text": "Yes, I'm blocked by the staging database. It's been down since this morning."
+        },
+        {
+          "speaker": "Lead",
+          "text": "OK, I'll ask the ops team to look at it."
+        }
+      ]
+    },
+    {
+      "type": "substitution",
+      "instruction": "Replace the task.",
+      "model": "Yesterday I finished the login page.",
+      "items": [
+        {
+          "cue": "fixed the payment bug",
+          "answers": [
+            "Yesterday I fixed the payment bug."
+          ]
+        },
+        {
+          "cue": "reviewed two pull requests",
+          "answers": [
+            "Yesterday I reviewed two pull requests."
+          ]
+        },
+        {
+          "cue": "updated the API documentation",
+          "answers": [
+            "Yesterday I updated the API documentation."
+          ]
+        }
+      ]
+    }
+  ]
+}

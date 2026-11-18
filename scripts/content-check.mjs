@@ -40,7 +40,7 @@ function checkFields(file, item) {
   if (!TRACKS.includes(item.track)) {
     fail(file, 'missing-field:track', `track must be one of ${TRACKS.join(', ')}`);
   }
-  for (const field of ['title', 'level', 'reviewed_by']) {
+  for (const field of ['title', 'level']) {
     if (!isText(item[field])) fail(file, `missing-field:${field}`, `${field} is required`);
   }
   const source = item.source ?? {};
@@ -73,10 +73,56 @@ function checkLicense(file, item) {
   }
 }
 
+const DRILL_TYPES = ['substitution', 'transformation', 'expansion', 'translation', 'response'];
+
+function isDraft(file) {
+  return relative(CONTENT_DIR, file).split(/[\\/]/)[0] === '_drafts';
+}
+
 function checkReviewer(file, item) {
-  if (isText(item.reviewed_by) && !policy.admins.includes(item.reviewed_by)) {
+  if (isDraft(file)) {
+    if (item.reviewed_by !== undefined) {
+      fail(file, 'draft-has-reviewer', 'drafts are unreviewed: move the file out of _drafts/');
+    }
+    return;
+  }
+  if (!isText(item.reviewed_by)) {
+    fail(file, 'missing-field:reviewed_by', 'reviewed_by is required outside content/_drafts/');
+  } else if (!policy.admins.includes(item.reviewed_by)) {
     fail(file, 'reviewer-not-admin', `reviewed_by must be an admin in content-policy.json`);
   }
+}
+
+function drillProblem(drill) {
+  if (drill?.type === 'dialogue') {
+    const lines = drill.lines;
+    if (!Array.isArray(lines) || lines.length === 0) return 'a dialogue needs lines';
+    const bad = lines.some((line) => !isText(line?.speaker) || !isText(line?.text));
+    return bad ? 'every dialogue line needs speaker and text' : null;
+  }
+  if (!DRILL_TYPES.includes(drill?.type)) return `type must be dialogue or ${DRILL_TYPES.join(', ')}`;
+  if (!isText(drill.instruction)) return `a ${drill.type} drill needs an instruction`;
+  if (!Array.isArray(drill.items) || drill.items.length === 0) return 'a drill needs items';
+  const bad = drill.items.some(
+    (it) =>
+      !isText(it?.cue) ||
+      !Array.isArray(it.answers) ||
+      it.answers.length === 0 ||
+      !it.answers.every(isText),
+  );
+  return bad ? 'every item needs a cue and at least one answer' : null;
+}
+
+function checkDrills(file, item) {
+  if (item.drills === undefined) return;
+  if (!Array.isArray(item.drills)) {
+    fail(file, 'invalid-drill', 'drills must be an array');
+    return;
+  }
+  item.drills.forEach((drill, index) => {
+    const problem = drillProblem(drill);
+    if (problem !== null) fail(file, 'invalid-drill', `drills[${index}]: ${problem}`);
+  });
 }
 
 function checkContentFile(file) {
@@ -90,6 +136,7 @@ function checkContentFile(file) {
   checkFields(file, item);
   checkLicense(file, item);
   checkReviewer(file, item);
+  checkDrills(file, item);
 }
 
 function checkGitIgnore() {

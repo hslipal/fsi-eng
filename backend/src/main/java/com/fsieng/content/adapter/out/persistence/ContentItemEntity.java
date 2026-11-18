@@ -32,6 +32,9 @@ public class ContentItemEntity {
 
   private @Nullable String reviewedBy;
 
+  @Column(name = "drills_json", nullable = false, length = 1_000_000)
+  private String drillsJson = "[]";
+
   protected ContentItemEntity() {}
 
   public ContentItemEntity(UUID id, String track, String title, String level) {
@@ -54,6 +57,11 @@ public class ContentItemEntity {
 
   public ContentItemEntity reviewedBy(@Nullable String reviewer) {
     this.reviewedBy = reviewer;
+    return this;
+  }
+
+  public ContentItemEntity withDrills(String json) {
+    this.drillsJson = json;
     return this;
   }
 
@@ -87,5 +95,9 @@ public class ContentItemEntity {
 
   public @Nullable String getReviewedBy() {
     return reviewedBy;
+  }
+
+  public String getDrillsJson() {
+    return drillsJson;
   }
 }

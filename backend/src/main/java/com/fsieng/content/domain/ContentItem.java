@@ -1,5 +1,6 @@
 package com.fsieng.content.domain;
 
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -13,7 +14,8 @@ public record ContentItem(
     @Nullable String sourceUrl,
     License license,
     String level,
-    @Nullable String reviewedBy) {
+    @Nullable String reviewedBy,
+    List<Drill> drills) {
 
   public ContentItem {
     if (title.isBlank()) {
@@ -22,6 +24,7 @@ public record ContentItem(
     if (level.isBlank()) {
       throw new InvalidContentException("level must not be blank");
     }
+    drills = List.copyOf(drills);
   }
 
   public boolean isPublishable() {

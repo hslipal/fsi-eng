@@ -123,6 +123,8 @@ change the other **in the same PR** and update `docs/api-contract.md`.
   (ILR or target IELTS band), `source` (`url` or `generator`), `license.kind` and
   `reviewed_by` (an admin listed in `content-policy.json`). `./scripts/verify.sh content`
   rejects anything else.
+- New material goes in `content/_drafts/<track>/` without `reviewed_by`. Never move a draft
+  out of `_drafts/` or add `reviewed_by` yourself: that is the admin's review step.
 - Copyrighted test material (license `dev-only`) lives ONLY in the git-ignored `content-dev/`
   folder. Never commit it, never copy it into `content/`, never change its license yourself.
 - LLM and speech calls go to DeepSeek ONLY through `<module>/adapter/out/llm/` and

@@ -1,43 +1,37 @@
 package com.fsieng.content.adapter.out.persistence;
 
+import com.fsieng.content.adapter.out.json.DrillJsonCodec;
 import com.fsieng.content.domain.ContentItem;
 import com.fsieng.content.domain.ContentItemId;
-import com.fsieng.content.domain.InvalidContentException;
 import com.fsieng.content.domain.License;
 import com.fsieng.content.domain.Track;
-import org.jspecify.annotations.Nullable;
 
-/** Converts rows to domain objects; every row is re-validated by the domain constructors. */
+/** Converts rows to domain objects and back; every row is re-validated by the domain. */
 final class ContentEntityMapper {
 
-  private ContentEntityMapper() {}
+  private final DrillJsonCodec drills;
 
-  static ContentItem toDomain(ContentItemEntity entity) {
+  ContentEntityMapper(DrillJsonCodec drills) {
+    this.drills = drills;
+  }
+
+  ContentItem toDomain(ContentItemEntity entity) {
     return new ContentItem(
         new ContentItemId(entity.getId()),
         Track.fromCode(entity.getTrack()),
         entity.getTitle(),
         entity.getSourceUrl(),
-        license(entity.getLicenseKind(), entity.getLicenseDetail()),
+        License.of(entity.getLicenseKind(), entity.getLicenseDetail()),
         entity.getLevel(),
-        entity.getReviewedBy());
+        entity.getReviewedBy(),
+        drills.decode(entity.getDrillsJson()));
   }
 
-  static License license(String kind, @Nullable String detail) {
-    return switch (kind) {
-      case "public-domain-us-gov" -> new License.PublicDomainUsGov();
-      case "cc-by" -> new License.CcBy(requireDetail(kind, detail));
-      case "generated" -> new License.Generated(requireDetail(kind, detail));
-      case "dev-only" -> new License.DevOnly();
-      case "licensed" -> new License.Licensed(requireDetail(kind, detail));
-      default -> throw new InvalidContentException("unknown license kind: " + kind);
-    };
-  }
-
-  private static String requireDetail(String kind, @Nullable String detail) {
-    if (detail == null) {
-      throw new InvalidContentException("license " + kind + " needs a detail value");
-    }
-    return detail;
+  ContentItemEntity toEntity(ContentItem item) {
+    return new ContentItemEntity(item.id().value(), item.track().code(), item.title(), item.level())
+        .withSource(item.sourceUrl())
+        .withLicense(item.license().kind(), License.detailOf(item.license()))
+        .reviewedBy(item.reviewedBy())
+        .withDrills(drills.encode(item.drills()));
   }
 }

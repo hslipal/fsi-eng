@@ -1,0 +1,34 @@
+{
+  "id": "8b4b3d3b-d167-4999-9b29-89585f22df6b",
+  "track": "it",
+  "title": "Replying to code review comments",
+  "level": "ILR 2+",
+  "source": {
+    "generator": "claude-opus-5.5"
+  },
+  "license": {
+    "kind": "generated"
+  },
+  "drills": [
+    {
+      "type": "response",
+      "instruction": "Reply to the review comment.",
+      "items": [
+        {
+          "cue": "Could you add a test for the empty list case?",
+          "answers": [
+            "Good catch. I'll add a test for that.",
+            "Sure, I will add a test for the empty list case."
+          ]
+        },
+        {
+          "cue": "This method is getting long. Can we split it?",
+          "answers": [
+            "Agreed. I will extract the validation into a separate method.",
+            "Good point. I'll split it into two methods."
+          ]
+        }
+      ]
+    }
+  ]
+}
