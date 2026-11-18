@@ -30,7 +30,8 @@ Never call `fetch` directly, never cast the response (`as Thing`) — the schema
 **Async UI state** — a discriminated union, see `features/library/model/useContentItems.ts`.
 
 **Component test** — render, interact via `userEvent`, query by role/label:
-`screen.getByRole('button', { name: 'Add' })`. Stub network with `stubFetch()` from `@/test/fetchStub`.
+`screen.getByRole('button', { name: 'Add' })`. Stub network with `stubFetch()` (one answer) or `stubFetchRoutes()` (per URL) from
+`@/test/fetchStub`.
 
 ## Things the compiler will stop you from doing
 
@@ -41,8 +42,8 @@ strings/numbers (`strict-boolean-expressions`).
 
 ## FSI-Eng notes
 
-- Planned features: `drills` (FSI pattern drills), `ielts` (mock tests), `library` (exists),
-  `progress` (review queue), `review` (admin content review). One folder each, isolated.
+- Features: `drills` (FSI pattern drills, exists), `library` (exists); planned: `ielts` (mock
+  tests), `progress` (review queue), `review` (admin content review). One folder each, isolated.
 - Never import an AI SDK (`openai`, `@anthropic-ai/*`, `deepseek*`); scoring goes through
   `/api/assessment`.
 - `npm run e2e` uses Playwright's bundled Chromium; `PW_CHANNEL=chrome npm run e2e` uses a local
