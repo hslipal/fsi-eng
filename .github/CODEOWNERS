@@ -1,0 +1,18 @@
+# Guardrail definitions require platform-team approval.
+/AGENTS.md                                   @hslipal
+/**/AGENTS.md                                @hslipal
+/guardrails.lock                             @hslipal
+/scripts/                                    @hslipal
+/.github/                                    @hslipal
+/frontend/eslint.config.js                   @hslipal
+/frontend/.dependency-cruiser.cjs            @hslipal
+/frontend/tsconfig*.json                     @hslipal
+/frontend/vite.config.ts                     @hslipal
+/frontend/playwright.config.ts               @hslipal
+/backend/pom.xml                             @hslipal
+/backend/.mvn/                               @hslipal
+/backend/src/test/java/**/architecture/      @hslipal
+/CLAUDE.md                                   @hslipal
+/.gitattributes                              @hslipal
+/content-policy.json                         @hslipal
+/prompts/scoring/                            @hslipal

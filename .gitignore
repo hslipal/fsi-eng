@@ -1,0 +1,18 @@
+# Copyrighted test material (license dev-only). Never commit it.
+content-dev/
+
+# Build output
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+
+# Local secrets and IDE files
+.env
+.env.*
+*.local
+.idea/
+.vscode/
+*.iml

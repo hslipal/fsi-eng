@@ -1,0 +1,5 @@
+{
+  "admins": ["admin"],
+  "publishableLicenses": ["public-domain-us-gov", "cc-by", "generated", "licensed"],
+  "bannedSourcePatterns": ["cambridge\\.org", "cambridgeenglish\\.org", "cambridge-exams", "cambridgeielts"]
+}
