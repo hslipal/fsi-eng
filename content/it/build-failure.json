@@ -20,21 +20,25 @@
           "cue": "a dependency is missing",
           "answers": [
             "The build fails because a dependency is missing."
-          ]
+          ],
+          "translation": "构建失败，因为缺少一个依赖。"
         },
         {
           "cue": "the linter finds an unused import",
           "answers": [
             "The build fails because the linter finds an unused import."
-          ]
+          ],
+          "translation": "构建失败，因为 linter 发现了一个没用到的 import。"
         },
         {
           "cue": "the coverage is below the threshold",
           "answers": [
             "The build fails because the coverage is below the threshold."
-          ]
+          ],
+          "translation": "构建失败，因为覆盖率低于阈值。"
         }
-      ]
+      ],
+      "modelTranslation": "构建失败，因为集成测试超时了。"
     },
     {
       "type": "transformation",
@@ -44,19 +48,25 @@
           "cue": "I fixed the null check in the parser.",
           "answers": [
             "Fix the null check in the parser"
-          ]
+          ],
+          "translation": "修复解析器里的空值检查",
+          "cueTranslation": "我修复了解析器里的空值检查。"
         },
         {
           "cue": "I added retry logic to the HTTP client.",
           "answers": [
             "Add retry logic to the HTTP client"
-          ]
+          ],
+          "translation": "给 HTTP 客户端添加重试逻辑",
+          "cueTranslation": "我给 HTTP 客户端加了重试逻辑。"
         },
         {
           "cue": "I removed the unused config file.",
           "answers": [
             "Remove the unused config file"
-          ]
+          ],
+          "translation": "删除没用的配置文件",
+          "cueTranslation": "我删除了没用的配置文件。"
         }
       ]
     }

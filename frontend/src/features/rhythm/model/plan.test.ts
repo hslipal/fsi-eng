@@ -10,6 +10,10 @@ function card(type: StepType, cue: string, base: string | null = null): LessonCa
     cue,
     base,
     answer: 'Answer.',
+    modelTranslation: null,
+    baseTranslation: null,
+    cueTranslation: null,
+    answerTranslation: null,
   };
 }
 

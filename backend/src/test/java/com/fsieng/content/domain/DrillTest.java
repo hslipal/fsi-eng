@@ -125,4 +125,34 @@ class DrillTest {
             () -> new Drill.PatternDrill(DrillType.EXPANSION, "Add it.", " ", items, true))
         .isInstanceOf(InvalidContentException.class);
   }
+
+  @Test
+  void carriesOptionalTranslationsAndDropsBlankOnes() {
+    Drill.PatternDrill chain =
+        new Drill.PatternDrill(
+            DrillType.EXPANSION,
+            "Change the sentence with the cue.",
+            "There's a cup on the table.",
+            List.of(
+                new Drill.Item(
+                    "spoon", List.of("There's a spoon on the table."), List.of(), " 桌上有个勺子。 ", " "),
+                new Drill.Item("on the chair", List.of("There's a spoon on the chair."))),
+            true,
+            "桌上有个杯子。");
+
+    assertThat(chain.items().getFirst().translation()).isEqualTo("桌上有个勺子。");
+    assertThat(chain.items().getFirst().cueTranslation()).isNull();
+    assertThat(chain.baseTranslationOf(0)).isEqualTo("桌上有个杯子。");
+    assertThat(chain.baseTranslationOf(1)).isEqualTo("桌上有个勺子。");
+    assertThat(
+            new Drill.PatternDrill(
+                    DrillType.SUBSTITUTION,
+                    "Replace it.",
+                    "I want water.",
+                    List.of(new Drill.Item("milk", List.of("I want milk."))),
+                    false,
+                    "")
+                .baseTranslationOf(0))
+        .isNull();
+  }
 }

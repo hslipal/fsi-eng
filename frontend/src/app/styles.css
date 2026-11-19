@@ -909,6 +909,18 @@ textarea {
   font-size: var(--step--1);
 }
 
+.drill-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+.translation-line {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-3);
+  color: var(--ink-soft);
+  font-size: var(--step-0);
+}
+
 /* ── Small screens: the rail becomes a top bar ─────────────────────────── */
 
 @media (max-width: 760px) {

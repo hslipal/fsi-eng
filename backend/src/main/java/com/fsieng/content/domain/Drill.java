@@ -31,7 +31,12 @@ public sealed interface Drill
    * item's first answer (FSI expansion: "There's a cup on the table." → spoon → on the chair).
    */
   record PatternDrill(
-      DrillType type, String instruction, @Nullable String model, List<Item> items, boolean chained)
+      DrillType type,
+      String instruction,
+      @Nullable String model,
+      List<Item> items,
+      boolean chained,
+      @Nullable String modelTranslation)
       implements Drill {
     public PatternDrill {
       requireText(instruction, "drill instruction");
@@ -42,6 +47,17 @@ public sealed interface Drill
         throw new InvalidContentException("a chained drill needs a model sentence to start from");
       }
       items = List.copyOf(items);
+      modelTranslation = blankToNull(modelTranslation);
+    }
+
+    /** A drill without a translation of its model sentence. */
+    public PatternDrill(
+        DrillType type,
+        String instruction,
+        @Nullable String model,
+        List<Item> items,
+        boolean chained) {
+      this(type, instruction, model, items, chained, null);
     }
 
     /** An unchained drill: every item stands on its own. */
@@ -56,6 +72,14 @@ public sealed interface Drill
         return null;
       }
       return index == 0 ? model : items.get(index - 1).answers().getFirst();
+    }
+
+    /** The Chinese translation of {@link #baseOf}, when there is one. */
+    public @Nullable String baseTranslationOf(int index) {
+      if (!chained) {
+        return null;
+      }
+      return index == 0 ? modelTranslation : items.get(index - 1).translation();
     }
   }
 
@@ -120,7 +144,16 @@ public sealed interface Drill
    * One cue and every answer we accept for it. Closed questions also list their options; each
    * accepted answer must then be one of the options.
    */
-  record Item(String cue, List<String> answers, List<String> options) {
+  /**
+   * One question. {@code translation} is the Chinese of the first answer and {@code cueTranslation}
+   * the Chinese of the cue, when the cue is a sentence; both optional.
+   */
+  record Item(
+      String cue,
+      List<String> answers,
+      List<String> options,
+      @Nullable String translation,
+      @Nullable String cueTranslation) {
     public Item {
       requireText(cue, "drill cue");
       if (answers.isEmpty()) {
@@ -134,6 +167,13 @@ public sealed interface Drill
       }
       answers = List.copyOf(answers);
       options = List.copyOf(options);
+      translation = blankToNull(translation);
+      cueTranslation = blankToNull(cueTranslation);
+    }
+
+    /** An item without translations. */
+    public Item(String cue, List<String> answers, List<String> options) {
+      this(cue, answers, options, null, null);
     }
 
     /** An open item: the learner types the answer. */
@@ -146,5 +186,9 @@ public sealed interface Drill
     if (value.isBlank()) {
       throw new InvalidContentException(what + " must not be blank");
     }
+  }
+
+  private static @Nullable String blankToNull(@Nullable String text) {
+    return text == null || text.isBlank() ? null : text.strip();
   }
 }

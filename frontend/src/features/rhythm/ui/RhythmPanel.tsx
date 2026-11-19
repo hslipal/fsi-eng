@@ -1,10 +1,11 @@
-import { useMemo, useState, type ReactElement } from 'react';
+import { useCallback, useMemo, useState, type ReactElement } from 'react';
 import { STEP_LABELS, TRACK_LABELS, TRACKS, type LessonSummary, type Track } from '../model/lesson';
 import { REPETITION_CHOICES } from '../model/plan';
 import { DEFAULT_LIMIT_SECONDS, LIMIT_CHOICES, type InputMode } from '../model/rhythm';
 import { useLessons } from '../model/useLesson';
 import { browserSpeaker, RATE_CHOICES, type Speaker } from '../model/voice';
 import { LessonRunner, type RhythmSettings } from './LessonRunner';
+import { Select } from './Select';
 
 interface PanelProps {
   /** Reads aloud; defaults to the browser's speech synthesis. Returning null means silent. */
@@ -17,6 +18,7 @@ const DEFAULTS: RhythmSettings = {
   mode: 'tape',
   autoAdvance: true,
   rate: 1,
+  showTranslation: true,
 };
 
 /** FSI pattern drills at speed: one lesson, each drill type many times, against the clock. */
@@ -25,6 +27,9 @@ export function RhythmPanel({ makeSpeaker = browserSpeaker }: PanelProps): React
   const [lessonId, setLessonId] = useState<string | null>(null);
   const [settings, setSettings] = useState<RhythmSettings>(DEFAULTS);
   const speaker = useMemo(() => makeSpeaker(settings.rate), [makeSpeaker, settings.rate]);
+  const toggleTranslation = useCallback(() => {
+    setSettings((current) => ({ ...current, showTranslation: !current.showTranslation }));
+  }, []);
 
   return (
     <section className="panel" aria-labelledby="rhythm-title">
@@ -47,6 +52,7 @@ export function RhythmPanel({ makeSpeaker = browserSpeaker }: PanelProps): React
           onExit={() => {
             setLessonId(null);
           }}
+          onToggleTranslation={toggleTranslation}
         />
       )}
     </section>
@@ -90,41 +96,6 @@ const MODE_LABELS: Readonly<Record<InputMode, string>> = {
   tape: '开口说，自己打分',
   typing: '打字，自动判分',
 };
-
-interface Choice {
-  readonly value: string;
-  readonly label: string;
-}
-
-function Select({
-  label,
-  value,
-  choices,
-  onPick,
-}: {
-  readonly label: string;
-  readonly value: string;
-  readonly choices: readonly Choice[];
-  readonly onPick: (value: string) => void;
-}): ReactElement {
-  return (
-    <label className="field">
-      {label}
-      <select
-        value={value}
-        onChange={(event) => {
-          onPick(event.target.value);
-        }}
-      >
-        {choices.map((choice) => (
-          <option key={choice.value} value={choice.value}>
-            {choice.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
 
 function Settings({ settings, canSpeak, onChange }: SettingsProps): ReactElement {
   const tape = settings.mode === 'tape';
@@ -198,8 +169,8 @@ function SettingsNote({ canSpeak }: { readonly canSpeak: boolean }): ReactElemen
   return (
     <p className="rhythm-note">
       {canSpeak
-        ? '提示和标准答案由浏览器朗读（不录音、不上传）。快捷键：空格 = 说完了，1/2/3 = 打分，R = 再听一遍。'
-        : '这个浏览器不能朗读，只显示文字。快捷键：空格 = 说完了，1/2/3 = 打分。'}
+        ? '提示和标准答案由浏览器朗读（不录音、不上传）。快捷键：空格 = 说完了，1/2/3 = 打分，R = 再听一遍，T = 显示/隐藏中文翻译。'
+        : '这个浏览器不能朗读，只显示文字。快捷键：空格 = 说完了，1/2/3 = 打分，T = 显示/隐藏中文翻译。'}
     </p>
   );
 }

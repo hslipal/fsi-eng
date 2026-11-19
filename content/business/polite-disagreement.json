@@ -20,21 +20,27 @@
           "answers": [
             "I'm afraid the price is a little higher than we expected.",
             "We were hoping for a price closer to our budget."
-          ]
+          ],
+          "translation": "恐怕这个价格比我们预期的要高一些。",
+          "cueTranslation": "你们的价格太高了。"
         },
         {
           "cue": "We can't accept these terms.",
           "answers": [
             "I'm not sure we can accept these terms as they stand.",
             "These terms would be difficult for us to accept."
-          ]
+          ],
+          "translation": "按现在的条款，我不确定我们能否接受。",
+          "cueTranslation": "我们不能接受这些条款。"
         },
         {
           "cue": "Your delivery date is too late.",
           "answers": [
             "Would it be possible to bring the delivery date forward?",
             "Is there any flexibility on the delivery date?"
-          ]
+          ],
+          "translation": "能否把交货日期提前？",
+          "cueTranslation": "你们的交货日期太晚了。"
         }
       ]
     },
@@ -47,7 +53,9 @@
           "answers": [
             "Thank you. Could you go up to 5% for an order of this size?",
             "Thanks. Is there any room to go a little higher on the discount?"
-          ]
+          ],
+          "translation": "谢谢。这么大的订单，能否给到 5%？",
+          "cueTranslation": "我们可以给 3% 的折扣。"
         }
       ]
     }

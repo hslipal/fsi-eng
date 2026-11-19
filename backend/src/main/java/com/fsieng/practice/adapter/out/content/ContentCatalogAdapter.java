@@ -8,6 +8,7 @@ import com.fsieng.practice.application.port.out.DrillCatalogPort;
 import com.fsieng.practice.domain.CardKey;
 import com.fsieng.practice.domain.Lesson;
 import com.fsieng.practice.domain.PracticeItem;
+import com.fsieng.practice.domain.Translations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -105,7 +106,12 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
               item.cue(),
               item.options(),
               item.answers(),
-              pattern.baseOf(i)));
+              pattern.baseOf(i),
+              new Translations(
+                  pattern.modelTranslation(),
+                  pattern.baseTranslationOf(i),
+                  item.cueTranslation(),
+                  item.translation())));
     }
   }
 

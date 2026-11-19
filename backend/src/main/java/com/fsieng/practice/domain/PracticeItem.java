@@ -18,7 +18,8 @@ public record PracticeItem(
     String cue,
     List<String> options,
     List<String> answers,
-    @Nullable String base) {
+    @Nullable String base,
+    Translations translations) {
 
   public PracticeItem {
     if (answers.isEmpty()) {
@@ -26,6 +27,32 @@ public record PracticeItem(
     }
     options = List.copyOf(options);
     answers = List.copyOf(answers);
+  }
+
+  /** An item without translations. */
+  public PracticeItem(
+      CardKey key,
+      String title,
+      String type,
+      String instruction,
+      @Nullable String model,
+      @Nullable String passage,
+      String cue,
+      List<String> options,
+      List<String> answers,
+      @Nullable String base) {
+    this(
+        key,
+        title,
+        type,
+        instruction,
+        model,
+        passage,
+        cue,
+        options,
+        answers,
+        base,
+        Translations.NONE);
   }
 
   /** An item that does not build on a previous sentence. */

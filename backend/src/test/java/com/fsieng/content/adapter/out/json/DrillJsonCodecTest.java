@@ -34,8 +34,15 @@ class DrillJsonCodecTest {
                 DrillType.EXPANSION,
                 "Change the sentence with the cue.",
                 "There's a cup on the table.",
-                List.of(new Drill.Item("spoon", List.of("There's a spoon on the table."))),
-                true),
+                List.of(
+                    new Drill.Item(
+                        "spoon",
+                        List.of("There's a spoon on the table."),
+                        List.of(),
+                        "桌上有个勺子。",
+                        "勺子")),
+                true,
+                "桌上有个杯子。"),
             new Drill.Reading(
                 "TRUE, FALSE or NOT GIVEN?",
                 "Rooftop gardens cool buildings.",

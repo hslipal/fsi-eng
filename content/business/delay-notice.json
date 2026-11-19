@@ -20,13 +20,15 @@
           "answers": [
             "The shipment will arrive on 12 March because of a customs inspection.",
             "Because of a customs inspection, the shipment will arrive on 12 March."
-          ]
+          ],
+          "translation": "由于海关检查，货物将于 3 月 12 日到达。"
         },
         {
           "cue": "We need to move the meeting to Thursday. (the client is travelling)",
           "answers": [
             "We need to move the meeting to Thursday because the client is travelling."
-          ]
+          ],
+          "translation": "因为客户在出差，我们需要把会议改到周四。"
         }
       ]
     },

@@ -20,15 +20,18 @@
           "cue": "The number of users / 3 to 12 million",
           "answers": [
             "The number of users rose sharply from 3 to 12 million between 2010 and 2015."
-          ]
+          ],
+          "translation": "2010 年至 2015 年间，用户数从 300 万急剧上升到 1200 万。"
         },
         {
           "cue": "Car ownership / 40% to 65%",
           "answers": [
             "Car ownership rose sharply from 40% to 65% between 2010 and 2015."
-          ]
+          ],
+          "translation": "2010 年至 2015 年间，汽车拥有率从 40% 急剧上升到 65%。"
         }
-      ]
+      ],
+      "modelTranslation": "2010 年至 2015 年间，销售额从 2000 万急剧上升到 4500 万。"
     },
     {
       "type": "transformation",
@@ -38,14 +41,18 @@
           "cue": "Sales rose sharply.",
           "answers": [
             "There was a sharp rise in sales."
-          ]
+          ],
+          "translation": "销售额出现了急剧上升。",
+          "cueTranslation": "销售额急剧上升。"
         },
         {
           "cue": "Unemployment fell slightly.",
           "answers": [
             "There was a slight fall in unemployment.",
             "There was a slight decrease in unemployment."
-          ]
+          ],
+          "translation": "失业率出现了小幅下降。",
+          "cueTranslation": "失业率略有下降。"
         }
       ]
     }
