@@ -13,17 +13,27 @@ interface Loaded<T> {
   readonly result: Loadable<T>;
 }
 
-export function describeError(error: unknown): string {
-  if (error instanceof HttpError && error.status === 404) {
-    return '这一课已经不存在了，请回到课程列表。';
+/** A missing lesson list means the backend predates rhythm training: it needs a restart. */
+const OLD_BACKEND =
+  '后端没有课程接口，多半还在运行旧版本。请运行 docker compose restart backend，等日志出现 Started 后刷新页面。';
+const LESSON_GONE = '这一课已经不存在了，请回到课程列表。';
+
+export function describeError(error: unknown, notFound?: string): string {
+  if (error instanceof HttpError && error.status === 404 && notFound !== undefined) {
+    return notFound;
   }
   return error instanceof Error ? error.message : '未知错误';
 }
 
+interface Pending<T> {
+  readonly key: string;
+  readonly promise: Promise<T>;
+  readonly signal: AbortSignal;
+  readonly notFound: string;
+}
+
 function settle<T>(
-  key: string,
-  promise: Promise<T>,
-  signal: AbortSignal,
+  { key, promise, signal, notFound }: Pending<T>,
   set: (loaded: Loaded<T>) => void,
 ): void {
   promise.then(
@@ -32,7 +42,7 @@ function settle<T>(
     },
     (error: unknown) => {
       if (!signal.aborted) {
-        set({ key, result: { kind: 'error', message: describeError(error) } });
+        set({ key, result: { kind: 'error', message: describeError(error, notFound) } });
       }
     },
   );
@@ -43,7 +53,8 @@ export function useLessons(track: Track): Loadable<LessonSummary[]> {
   const [loaded, setLoaded] = useState<Loaded<LessonSummary[]> | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    settle(track, fetchLessons(track, controller.signal), controller.signal, setLoaded);
+    const promise = fetchLessons(track, controller.signal);
+    settle({ key: track, promise, signal: controller.signal, notFound: OLD_BACKEND }, setLoaded);
     return () => {
       controller.abort();
     };
@@ -56,7 +67,8 @@ export function useLesson(id: string): Loadable<Lesson> {
   const [loaded, setLoaded] = useState<Loaded<Lesson> | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    settle(id, fetchLesson(id, controller.signal), controller.signal, setLoaded);
+    const promise = fetchLesson(id, controller.signal);
+    settle({ key: id, promise, signal: controller.signal, notFound: LESSON_GONE }, setLoaded);
     return () => {
       controller.abort();
     };

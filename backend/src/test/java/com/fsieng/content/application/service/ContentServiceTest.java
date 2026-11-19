@@ -31,5 +31,16 @@ class ContentServiceTest {
     ContentService service = new ContentService(_ -> List.of(generated, pastPaper));
 
     assertThat(service.listPublished(Track.IELTS)).containsExactly(generated);
+    assertThat(service.listForPractice(Track.IELTS)).containsExactly(generated);
+  }
+
+  @Test
+  void practiceUsesDevOnlyItemsOnlyWhenSwitchedOn() {
+    ContentItem generated = item("Original essay prompt", new License.Generated("deepseek"));
+    ContentItem book = item("Business letters book", new License.DevOnly());
+    ContentService dev = new ContentService(_ -> List.of(generated, book), true);
+
+    assertThat(dev.listForPractice(Track.IELTS)).containsExactly(generated, book);
+    assertThat(dev.listPublished(Track.IELTS)).containsExactly(generated);
   }
 }

@@ -140,14 +140,21 @@ function useAutoAdvance(data: SessionData, dispatch: Dispatch): void {
  * the limit. Spoken answers are recognised in the browser and graded by the server; feedback moves
  * on by itself unless paused.
  */
+export interface SessionOptions {
+  readonly limitSeconds: number;
+  readonly mode: InputMode;
+  /** Feedback moves on by itself; otherwise it waits for "next". */
+  readonly autoAdvance: boolean;
+}
+
 export function useRhythmSession(
   plan: readonly Turn[],
-  limitSeconds: number,
-  mode: InputMode,
+  options: SessionOptions,
   recognition: RecognitionFactory | null,
 ): RhythmSession {
+  const { limitSeconds, mode, autoAdvance } = options;
   const [data, dispatch] = useReducer(reduce, null, () =>
-    startSession(plan, limitSeconds, recognition === null ? 'typing' : mode),
+    startSession(plan, limitSeconds, recognition === null ? 'typing' : mode, autoAdvance),
   );
   useLateReminder(data, dispatch);
   useListening(data, recognition, dispatch);

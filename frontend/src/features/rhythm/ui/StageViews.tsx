@@ -212,7 +212,7 @@ export function Result({
           下一题
         </button>
         <button className="button button-quiet" type="button" onClick={onTogglePause}>
-          {paused ? '继续自动翻页' : '暂停'}
+          {paused ? '改为自动翻页' : '暂停自动翻页'}
         </button>
       </div>
     </div>

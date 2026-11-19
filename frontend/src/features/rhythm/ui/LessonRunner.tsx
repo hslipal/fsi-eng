@@ -1,17 +1,14 @@
 import { useMemo, type ReactElement } from 'react';
 import { STEP_LABELS, type Lesson } from '../model/lesson';
 import { buildPlan } from '../model/plan';
-import type { InputMode } from '../model/rhythm';
 import type { RecognitionFactory } from '../model/speech';
 import { useLesson } from '../model/useLesson';
-import { useRhythmSession } from '../model/useRhythmSession';
+import { useRhythmSession, type SessionOptions } from '../model/useRhythmSession';
 import { Checking, Intro, Prompt, Result } from './StageViews';
 import { Summary } from './Summary';
 
-export interface RhythmSettings {
-  readonly limitSeconds: number;
+export interface RhythmSettings extends SessionOptions {
   readonly repetitions: number;
-  readonly mode: InputMode;
 }
 
 interface RunnerProps {
@@ -46,6 +43,11 @@ export function LessonRunner({
           课程加载失败：{lesson.message}
         </p>
       ) : null}
+      {lesson.kind === 'ready' && lesson.value.devOnly ? (
+        <p className="dev-note" role="note">
+          开发素材：取自未授权的图书，仅限开发环境使用
+        </p>
+      ) : null}
       {lesson.kind === 'ready' ? (
         <Drill lesson={lesson.value} settings={settings} recognition={recognition} />
       ) : null}
@@ -64,7 +66,7 @@ function Drill({ lesson, settings, recognition }: DrillProps): ReactElement {
     () => buildPlan(lesson.cards, settings.repetitions),
     [lesson, settings.repetitions],
   );
-  const session = useRhythmSession(plan, settings.limitSeconds, settings.mode, recognition);
+  const session = useRhythmSession(plan, settings, recognition);
   const { data, turn } = session;
   return (
     <div className="drill">

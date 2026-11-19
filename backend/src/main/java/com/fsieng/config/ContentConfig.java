@@ -6,7 +6,6 @@ import com.fsieng.content.adapter.out.json.DrillJsonCodec;
 import com.fsieng.content.adapter.out.persistence.ContentItemJpaRepository;
 import com.fsieng.content.adapter.out.persistence.ContentPersistenceAdapter;
 import com.fsieng.content.application.port.in.ImportContentUseCase;
-import com.fsieng.content.application.port.in.ListPublishedContentUseCase;
 import com.fsieng.content.application.port.in.SpeakingPromptsUseCase;
 import com.fsieng.content.application.port.out.LoadContentPort;
 import com.fsieng.content.application.port.out.ReadContentFilesPort;
@@ -76,9 +75,12 @@ public class ContentConfig {
         includeDevOnly);
   }
 
+  /** Published content for the library; practice also gets dev-only items in the dev profile. */
   @Bean
-  ListPublishedContentUseCase listPublishedContentUseCase(LoadContentPort loadContentPort) {
-    return new ContentService(loadContentPort);
+  ContentService contentService(
+      LoadContentPort loadContentPort,
+      @Value("${fsi.content.include-dev-only:false}") boolean includeDevOnly) {
+    return new ContentService(loadContentPort, includeDevOnly);
   }
 
   @Bean

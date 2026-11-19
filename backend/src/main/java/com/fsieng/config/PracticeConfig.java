@@ -1,6 +1,6 @@
 package com.fsieng.config;
 
-import com.fsieng.content.application.port.in.ListPublishedContentUseCase;
+import com.fsieng.content.application.port.in.ListPracticeContentUseCase;
 import com.fsieng.practice.adapter.out.content.ContentCatalogAdapter;
 import com.fsieng.practice.adapter.out.persistence.ReviewCardJpaRepository;
 import com.fsieng.practice.adapter.out.persistence.ReviewCardPersistenceAdapter;
@@ -15,11 +15,11 @@ public class PracticeConfig {
 
   @Bean
   PracticeService practiceService(
-      ListPublishedContentUseCase publishedContent,
+      ListPracticeContentUseCase practiceContent,
       ReviewCardJpaRepository reviewCards,
       Clock clock) {
     return new PracticeService(
-        new ContentCatalogAdapter(publishedContent),
+        new ContentCatalogAdapter(practiceContent),
         new ReviewCardPersistenceAdapter(reviewCards),
         new AnswerGrader(),
         clock);

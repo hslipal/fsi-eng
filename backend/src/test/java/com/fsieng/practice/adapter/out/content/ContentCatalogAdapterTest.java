@@ -53,7 +53,7 @@ class ContentCatalogAdapterTest {
           Track.BUSINESS,
           "Things on the table",
           null,
-          new License.Generated("claude"),
+          new License.DevOnly(),
           "ILR 1",
           "admin",
           List.of(
@@ -121,7 +121,11 @@ class ContentCatalogAdapterTest {
           assertThat(lesson.items()).extracting(PracticeItem::type).containsOnly("substitution");
         });
     assertThat(adapter.lesson(TABLE_ID.toString()))
-        .hasValueSatisfying(lesson -> assertThat(lesson.count("expansion")).isEqualTo(2));
+        .hasValueSatisfying(lesson -> {
+          assertThat(lesson.count("expansion")).isEqualTo(2);
+          assertThat(lesson.devOnly()).isTrue();
+        });
+    assertThat(adapter.lessonsFor("it")).singleElement().matches(lesson -> !lesson.devOnly());
     assertThat(adapter.lesson("missing")).isEmpty();
   }
 }
