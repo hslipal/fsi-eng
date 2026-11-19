@@ -142,11 +142,9 @@ public sealed interface Drill
 
   /**
    * One cue and every answer we accept for it. Closed questions also list their options; each
-   * accepted answer must then be one of the options.
-   */
-  /**
-   * One question. {@code translation} is the Chinese of the first answer and {@code cueTranslation}
-   * the Chinese of the cue, when the cue is a sentence; both optional.
+   * accepted answer must then be one of the options. {@code translation} is the Chinese of the
+   * first answer and {@code cueTranslation} the Chinese of the cue, when the cue is a sentence;
+   * both optional.
    */
   record Item(
       String cue,
