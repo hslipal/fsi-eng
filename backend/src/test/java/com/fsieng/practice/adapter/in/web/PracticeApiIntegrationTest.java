@@ -200,11 +200,11 @@ class PracticeApiIntegrationTest {
             new ParameterizedTypeReference<Map<String, Object>>() {});
 
     assertThat(lesson).containsEntry("title", "Requesting a quote");
-    assertThat(lesson.get("cards"))
-        .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.LIST)
-        .extracting(card -> ((Map<?, ?>) card).get("base"))
+    List<?> cards = (List<?>) Objects.requireNonNull(lesson.get("cards"));
+    assertThat(cards)
+        .extracting(card -> String.valueOf(((Map<?, ?>) card).get("base")))
         .containsExactly(
-            null, null, "There's a cup on the table.", "There's a spoon on the table.");
+            "null", "null", "There's a cup on the table.", "There's a spoon on the table.");
   }
 
   @Test
