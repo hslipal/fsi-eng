@@ -829,6 +829,86 @@ textarea {
   background: var(--wrong);
 }
 
+/* ── Subtitles of sample answers ─────────────────────────────────────────── */
+
+.subtitles {
+  margin-top: var(--space-3);
+}
+
+.subtitle-layers {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.layer-toggle {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--sheet);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: var(--step--1);
+  cursor: pointer;
+}
+
+.layer-toggle[aria-pressed='true'] {
+  border-color: var(--lab);
+  background: var(--lab-tint);
+  color: var(--lab);
+  font-weight: 700;
+}
+
+.subtitle-lines {
+  max-height: 16rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--sheet);
+}
+
+.subtitle-line {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-left: 3px solid transparent;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.subtitle-line:hover {
+  background: var(--paper);
+}
+
+.subtitle-lines li[aria-current='true'] .subtitle-line {
+  border-left-color: var(--lab);
+  background: var(--lab-tint);
+  color: var(--ink);
+}
+
+.subtitle-en {
+  display: block;
+  font-family: var(--lang);
+  font-size: var(--step-1);
+}
+
+.subtitle-zh {
+  display: block;
+  font-size: var(--step-0);
+}
+
+.subtitle-note {
+  color: var(--ink-soft);
+  font-size: var(--step--1);
+}
+
 /* ── Small screens: the rail becomes a top bar ─────────────────────────── */
 
 @media (max-width: 760px) {

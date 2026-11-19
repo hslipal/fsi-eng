@@ -12,6 +12,7 @@ import com.fsieng.content.domain.Drill;
 import com.fsieng.content.domain.License;
 import com.fsieng.content.domain.SampleAudio;
 import com.fsieng.content.domain.SpeakingPromptRef;
+import com.fsieng.content.domain.Subtitles;
 import com.fsieng.content.domain.Track;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -101,6 +102,31 @@ class SpeakingPromptsServiceTest {
     SpeakingPromptsService noFiles =
         new SpeakingPromptsService(content, SpeakingPromptsServiceTest::noAudio, false);
     assertThatThrownBy(() -> noFiles.sample(PUBLISHED + ":0:0"))
+        .isInstanceOf(ContentNotFoundException.class);
+  }
+
+  private static Optional<Subtitles> fakeSubtitles(License license, String path) {
+    return license instanceof License.DevOnly
+        ? Optional.of(new Subtitles(List.of(new Subtitles.Segment(0, 1, path, "字幕"))))
+        : Optional.empty();
+  }
+
+  @Test
+  void servesSubtitlesOfASampleOrSaysThereAreNone() {
+    SpeakingPromptsService service =
+        new SpeakingPromptsService(content, audio, SpeakingPromptsServiceTest::fakeSubtitles, true);
+
+    assertThat(service.subtitles(DEV + ":0:0").segments().getFirst().text())
+        .isEqualTo("ielts/a.mp3");
+    assertThatThrownBy(() -> service.subtitles(PUBLISHED + ":0:0"))
+        .isInstanceOf(ContentNotFoundException.class)
+        .hasMessageContaining("subtitles");
+    assertThatThrownBy(() -> service.subtitles(DEV + ":0:1"))
+        .isInstanceOf(ContentNotFoundException.class);
+    assertThatThrownBy(() -> service.subtitles("missing"))
+        .isInstanceOf(ContentNotFoundException.class);
+    assertThatThrownBy(
+            () -> new SpeakingPromptsService(content, audio, true).subtitles(DEV + ":0:0"))
         .isInstanceOf(ContentNotFoundException.class);
   }
 }

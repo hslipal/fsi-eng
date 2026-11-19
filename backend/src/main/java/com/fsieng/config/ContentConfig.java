@@ -2,6 +2,7 @@ package com.fsieng.config;
 
 import com.fsieng.content.adapter.out.files.ContentFileSource;
 import com.fsieng.content.adapter.out.files.SampleAudioFiles;
+import com.fsieng.content.adapter.out.files.SubtitleFiles;
 import com.fsieng.content.adapter.out.json.DrillJsonCodec;
 import com.fsieng.content.adapter.out.persistence.ContentItemJpaRepository;
 import com.fsieng.content.adapter.out.persistence.ContentPersistenceAdapter;
@@ -72,6 +73,7 @@ public class ContentConfig {
     return new SpeakingPromptsService(
         loadContentPort,
         new SampleAudioFiles(Path.of(contentDir), Path.of(devDir)),
+        new SubtitleFiles(Path.of(contentDir), Path.of(devDir), CONTENT_JSON),
         includeDevOnly);
   }
 

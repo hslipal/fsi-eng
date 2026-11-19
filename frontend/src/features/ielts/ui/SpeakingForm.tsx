@@ -1,7 +1,9 @@
 import { useState, type ReactElement } from 'react';
-import { sampleUrl, type SpeakingPrompt } from '../model/assessment';
+import type { SpeakingPrompt } from '../model/assessment';
+import type { SubtitleLayers } from '../model/subtitles';
 import type { AssessmentRun } from '../model/useAssessment';
 import { useSpeakingPrompts } from '../model/useSpeakingPrompts';
+import { SamplePlayer } from './SamplePlayer';
 
 export function SpeakingForm({ assessment }: { readonly assessment: AssessmentRun }): ReactElement {
   const prompts = useSpeakingPrompts();
@@ -142,7 +144,7 @@ function PartAndQuestion({
 }
 
 function PromptDetails({ prompt }: { readonly prompt: SpeakingPrompt }): ReactElement {
-  const length = prompt.sampleSeconds === null ? '' : `（${prompt.sampleSeconds.toFixed(0)} 秒）`;
+  const [layers, setLayers] = useState<SubtitleLayers>({ english: true, chinese: true });
   return (
     <div>
       <p className="task-prompt">{prompt.question}</p>
@@ -152,10 +154,7 @@ function PromptDetails({ prompt }: { readonly prompt: SpeakingPrompt }): ReactEl
         </p>
       ) : null}
       {prompt.hasSample ? (
-        <figure className="sample">
-          <figcaption>示范回答{length}</figcaption>
-          <audio controls preload="none" src={sampleUrl(prompt)} aria-label="示范回答" />
-        </figure>
+        <SamplePlayer key={prompt.key} prompt={prompt} layers={layers} onLayers={setLayers} />
       ) : null}
     </div>
   );
