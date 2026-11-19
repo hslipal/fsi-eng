@@ -98,13 +98,14 @@ class SpeakingPromptsIntegrationTest {
 
     List<?> lines = (List<?>) Objects.requireNonNull(subtitles.get("lines"));
     assertThat(lines).hasSize(2);
-    assertThat((Map<?, ?>) lines.getFirst())
-        .containsEntry("start", 0.0)
-        .containsEntry("end", 2.5)
-        .containsEntry("text", "Yes, I really enjoy my job.")
-        .containsEntry("translation", "是的，我很喜欢我的工作。");
-    assertThat((Map<?, ?>) lines.get(1))
-        .containsEntry("text", "I work with friendly people.")
-        .containsEntry("translation", null);
+    Map<?, ?> first = (Map<?, ?>) lines.getFirst();
+    Map<?, ?> second = (Map<?, ?>) lines.get(1);
+    assertThat(first.get("start")).isEqualTo(0.0);
+    assertThat(first.get("end")).isEqualTo(2.5);
+    assertThat(first.get("text")).isEqualTo("Yes, I really enjoy my job.");
+    assertThat(first.get("translation")).isEqualTo("是的，我很喜欢我的工作。");
+    assertThat(second.get("text")).isEqualTo("I work with friendly people.");
+    assertThat(second.containsKey("translation")).isTrue();
+    assertThat(second.get("translation")).isNull();
   }
 }
