@@ -78,6 +78,17 @@ public final class PracticeService
   }
 
   @Override
+  public Feedback selfGrade(LearnerId learner, CardKey key, Verdict verdict, boolean slow) {
+    PracticeItem item = catalog.find(key).orElseThrow(() -> new UnknownCardException(key));
+    Instant now = clock.instant();
+    ReviewCard before =
+        cards.find(learner, key).orElseGet(() -> ReviewCard.fresh(learner, key, now));
+    ReviewCard after = before.after(scheduled(verdict, slow), now);
+    cards.save(after);
+    return new Feedback(new Grade(verdict, item.answers().getFirst()), after);
+  }
+
+  @Override
   public List<Lesson> lessons(String track) {
     return catalog.lessonsFor(track).stream().filter(lesson -> !lesson.isEmpty()).toList();
   }

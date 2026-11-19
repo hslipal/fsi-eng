@@ -196,4 +196,26 @@ class PracticeServiceTest {
         .hasMessageContaining("lesson-2");
     assertThatThrownBy(() -> service.lesson("missing")).isInstanceOf(LessonNotFoundException.class);
   }
+
+  @Test
+  void aSelfGradeReschedulesTheCardAndReportsTheModelAnswer() {
+    remember(1, Duration.ZERO);
+
+    Feedback right = service.selfGrade(LEARNER, items.get(1).key(), Verdict.CORRECT, false);
+    assertThat(right.grade().expected()).isEqualTo("Answer 1.");
+    assertThat(right.card().box()).isEqualTo(2);
+
+    Feedback slow = service.selfGrade(LEARNER, items.get(2).key(), Verdict.CORRECT, true);
+    assertThat(slow.card().box()).isZero();
+
+    assertThat(service.selfGrade(LEARNER, items.get(1).key(), Verdict.WRONG, false).card().box())
+        .isZero();
+  }
+
+  @Test
+  void aSelfGradeForAnUnknownCardFails() {
+    assertThatThrownBy(
+            () -> service.selfGrade(LEARNER, new CardKey("missing"), Verdict.CORRECT, false))
+        .isInstanceOf(UnknownCardException.class);
+  }
 }

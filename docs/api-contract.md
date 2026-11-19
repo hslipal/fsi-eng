@@ -103,8 +103,17 @@ items from `content-dev/`. The library (`/api/content/items`) never lists dev-on
 
 ### GET /api/practice/lessons/{id}
 
-`{ id, title, level, cards, devOnly }`: `cards` are cards (see above) of those four types, in the same
-order, each drill's items in content order. Unknown id or no pattern drills → `404`.
+`{ id, title, level, cards, devOnly }`: `cards` are `{ cardKey, type, instruction, model, cue,
+base, answer }` of those four types, in the same order, each drill's items in content order.
+`answer` is the first accepted answer: in FSI tape style the learner hears it after answering
+aloud. Unknown id or no pattern drills → `404`.
+
+### POST /api/practice/self-grades
+
+The learner's own verdict after hearing the model answer (tape style). Request
+`{ "cardKey": string, "verdict": "correct" | "close" | "wrong", "slow"?: boolean }`; response as
+for `/answers` (`expected` is the model answer). Reschedules the card like a graded answer.
+Unknown card → `404`; unknown verdict → `400`.
 
 Backend: `LessonSummaryResponse`, `LessonResponse`. Frontend: `LessonSummarySchema`,
 `LessonSchema` (`frontend/src/features/rhythm/model/lesson.ts`).

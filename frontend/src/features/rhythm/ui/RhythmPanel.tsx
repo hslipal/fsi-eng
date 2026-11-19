@@ -1,37 +1,40 @@
-import { useState, type ReactElement } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 import { STEP_LABELS, TRACK_LABELS, TRACKS, type LessonSummary, type Track } from '../model/lesson';
 import { REPETITION_CHOICES } from '../model/plan';
 import { DEFAULT_LIMIT_SECONDS, LIMIT_CHOICES, type InputMode } from '../model/rhythm';
-import { browserRecognition, type RecognitionFactory } from '../model/speech';
 import { useLessons } from '../model/useLesson';
+import { browserSpeaker, RATE_CHOICES, type Speaker } from '../model/voice';
 import { LessonRunner, type RhythmSettings } from './LessonRunner';
 
 interface PanelProps {
-  /** Speech recognition; defaults to the browser's. Null means typing only. */
-  readonly recognition?: RecognitionFactory | null;
+  /** Reads aloud; defaults to the browser's speech synthesis. Returning null means silent. */
+  readonly makeSpeaker?: (rate: number) => Speaker | null;
 }
 
+const DEFAULTS: RhythmSettings = {
+  limitSeconds: DEFAULT_LIMIT_SECONDS,
+  repetitions: 20,
+  mode: 'tape',
+  autoAdvance: true,
+  rate: 1,
+};
+
 /** FSI pattern drills at speed: one lesson, each drill type many times, against the clock. */
-export function RhythmPanel({ recognition }: PanelProps): ReactElement {
-  const [speech] = useState(() => (recognition === undefined ? browserRecognition() : recognition));
+export function RhythmPanel({ makeSpeaker = browserSpeaker }: PanelProps): ReactElement {
   const [track, setTrack] = useState<Track>('business');
   const [lessonId, setLessonId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<RhythmSettings>({
-    limitSeconds: DEFAULT_LIMIT_SECONDS,
-    repetitions: 20,
-    mode: speech === null ? 'typing' : 'voice',
-    autoAdvance: true,
-  });
+  const [settings, setSettings] = useState<RhythmSettings>(DEFAULTS);
+  const speaker = useMemo(() => makeSpeaker(settings.rate), [makeSpeaker, settings.rate]);
 
   return (
     <section className="panel" aria-labelledby="rhythm-title">
       <h2 id="rhythm-title">节奏训练</h2>
       <p className="panel-lead">
-        {`FSI 的句型操练：先替换，再转换、回应、扩展。提示一出现就开口，每种练习连续做 ${String(settings.repetitions)} 次。`}
+        {`FSI 磁带式操练：听提示，在停顿里大声说出整句，再听标准答案、跟读一遍、给自己打分。每种练习连续做 ${String(settings.repetitions)} 次。`}
       </p>
       {lessonId === null ? (
         <>
-          <Settings settings={settings} voiceAvailable={speech !== null} onChange={setSettings} />
+          <Settings settings={settings} canSpeak={speaker !== null} onChange={setSettings} />
           <TrackTabs track={track} onChange={setTrack} />
           <LessonList track={track} onPick={setLessonId} />
         </>
@@ -40,7 +43,7 @@ export function RhythmPanel({ recognition }: PanelProps): ReactElement {
           key={lessonId}
           lessonId={lessonId}
           settings={settings}
-          recognition={speech}
+          speaker={speaker}
           onExit={() => {
             setLessonId(null);
           }}
@@ -79,93 +82,124 @@ function TrackTabs({
 
 interface SettingsProps {
   readonly settings: RhythmSettings;
-  readonly voiceAvailable: boolean;
+  readonly canSpeak: boolean;
   readonly onChange: (settings: RhythmSettings) => void;
 }
 
-const MODE_LABELS: Readonly<Record<InputMode, string>> = { voice: '开口说', typing: '打字' };
+const MODE_LABELS: Readonly<Record<InputMode, string>> = {
+  tape: '开口说，自己打分',
+  typing: '打字，自动判分',
+};
 
-function Settings({ settings, voiceAvailable, onChange }: SettingsProps): ReactElement {
-  return (
-    <fieldset className="rhythm-settings">
-      <legend>练习设置</legend>
-      <label className="field">
-        限时
-        <select
-          value={settings.limitSeconds}
-          onChange={(event) => {
-            onChange({ ...settings, limitSeconds: Number(event.target.value) });
-          }}
-        >
-          {LIMIT_CHOICES.map((seconds) => (
-            <option key={seconds} value={seconds}>
-              {seconds} 秒内开口
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="field">
-        每种练习
-        <select
-          value={settings.repetitions}
-          onChange={(event) => {
-            onChange({ ...settings, repetitions: Number(event.target.value) });
-          }}
-        >
-          {REPETITION_CHOICES.map((count) => (
-            <option key={count} value={count}>
-              {count} 次
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="field">
-        作答方式
-        <select
-          value={settings.mode}
-          onChange={(event) => {
-            onChange({ ...settings, mode: event.target.value === 'voice' ? 'voice' : 'typing' });
-          }}
-        >
-          {(['voice', 'typing'] as const).map((mode) => (
-            <option key={mode} value={mode} disabled={mode === 'voice' && !voiceAvailable}>
-              {MODE_LABELS[mode]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <PageTurn settings={settings} onChange={onChange} />
-      <VoiceNote available={voiceAvailable} />
-    </fieldset>
-  );
+interface Choice {
+  readonly value: string;
+  readonly label: string;
 }
 
-function PageTurn({
-  settings,
-  onChange,
-}: Pick<SettingsProps, 'settings' | 'onChange'>): ReactElement {
+function Select({
+  label,
+  value,
+  choices,
+  onPick,
+}: {
+  readonly label: string;
+  readonly value: string;
+  readonly choices: readonly Choice[];
+  readonly onPick: (value: string) => void;
+}): ReactElement {
   return (
     <label className="field">
-      翻页
+      {label}
       <select
-        value={settings.autoAdvance ? 'auto' : 'manual'}
+        value={value}
         onChange={(event) => {
-          onChange({ ...settings, autoAdvance: event.target.value === 'auto' });
+          onPick(event.target.value);
         }}
       >
-        <option value="auto">答完自动翻页</option>
-        <option value="manual">点「下一题」翻页</option>
+        {choices.map((choice) => (
+          <option key={choice.value} value={choice.value}>
+            {choice.label}
+          </option>
+        ))}
       </select>
     </label>
   );
 }
 
-function VoiceNote({ available }: { readonly available: boolean }): ReactElement {
+function Settings({ settings, canSpeak, onChange }: SettingsProps): ReactElement {
+  const tape = settings.mode === 'tape';
+  return (
+    <fieldset className="rhythm-settings">
+      <legend>练习设置</legend>
+      <Select
+        label="作答方式"
+        value={settings.mode}
+        choices={(['tape', 'typing'] as const).map((mode) => ({
+          value: mode,
+          label: MODE_LABELS[mode],
+        }))}
+        onPick={(value) => {
+          onChange({ ...settings, mode: value === 'typing' ? 'typing' : 'tape' });
+        }}
+      />
+      <Select
+        label={tape ? '停顿' : '限时'}
+        value={String(settings.limitSeconds)}
+        choices={LIMIT_CHOICES.map((seconds) => ({
+          value: String(seconds),
+          label: `${String(seconds)} 秒`,
+        }))}
+        onPick={(value) => {
+          onChange({ ...settings, limitSeconds: Number(value) });
+        }}
+      />
+      <Select
+        label="每种练习"
+        value={String(settings.repetitions)}
+        choices={REPETITION_CHOICES.map((count) => ({
+          value: String(count),
+          label: `${String(count)} 次`,
+        }))}
+        onPick={(value) => {
+          onChange({ ...settings, repetitions: Number(value) });
+        }}
+      />
+      <Select
+        label="朗读语速"
+        value={String(settings.rate)}
+        choices={RATE_CHOICES.map((rate) => ({ value: String(rate.value), label: rate.label }))}
+        onPick={(value) => {
+          onChange({ ...settings, rate: Number(value) });
+        }}
+      />
+      {tape ? null : <PageTurn settings={settings} onChange={onChange} />}
+      <SettingsNote canSpeak={canSpeak} />
+    </fieldset>
+  );
+}
+
+function PageTurn({ settings, onChange }: Omit<SettingsProps, 'canSpeak'>): ReactElement {
+  return (
+    <Select
+      label="翻页"
+      value={settings.autoAdvance ? 'auto' : 'manual'}
+      choices={[
+        { value: 'auto', label: '答完自动翻页' },
+        { value: 'manual', label: '点「下一题」翻页' },
+      ]}
+      onPick={(value) => {
+        onChange({ ...settings, autoAdvance: value === 'auto' });
+      }}
+    />
+  );
+}
+
+function SettingsNote({ canSpeak }: { readonly canSpeak: boolean }): ReactElement {
   return (
     <p className="rhythm-note">
-      {available
-        ? '开口说使用浏览器自带的语音识别（Chrome 会把录音发给 Google 识别）。'
-        : '这个浏览器不支持语音识别，只能打字。用 Chrome 或 Edge 可以开口说。'}
+      {canSpeak
+        ? '提示和标准答案由浏览器朗读（不录音、不上传）。快捷键：空格 = 说完了，1/2/3 = 打分，R = 再听一遍。'
+        : '这个浏览器不能朗读，只显示文字。快捷键：空格 = 说完了，1/2/3 = 打分。'}
     </p>
   );
 }

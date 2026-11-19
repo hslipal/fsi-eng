@@ -1,29 +1,29 @@
-import { useMemo, type ReactElement } from 'react';
-import { STEP_LABELS, type Lesson } from '../model/lesson';
+import { useEffect, useMemo, type ReactElement } from 'react';
+import { STEP_LABELS, type Lesson, type Verdict } from '../model/lesson';
 import { buildPlan } from '../model/plan';
-import type { RecognitionFactory } from '../model/speech';
 import { useLesson } from '../model/useLesson';
-import { useRhythmSession, type SessionOptions } from '../model/useRhythmSession';
-import { Checking, Intro, Prompt, Result } from './StageViews';
+import {
+  useRhythmSession,
+  type RhythmSession,
+  type SessionOptions,
+} from '../model/useRhythmSession';
+import type { Speaker } from '../model/voice';
+import { Checking, Intro, Result, Reveal, TapeCue, TypedCue } from './StageViews';
 import { Summary } from './Summary';
 
 export interface RhythmSettings extends SessionOptions {
   readonly repetitions: number;
+  readonly rate: number;
 }
 
 interface RunnerProps {
   readonly lessonId: string;
   readonly settings: RhythmSettings;
-  readonly recognition: RecognitionFactory | null;
+  readonly speaker: Speaker | null;
   readonly onExit: () => void;
 }
 
-export function LessonRunner({
-  lessonId,
-  settings,
-  recognition,
-  onExit,
-}: RunnerProps): ReactElement {
+export function LessonRunner({ lessonId, settings, speaker, onExit }: RunnerProps): ReactElement {
   const lesson = useLesson(lessonId);
   return (
     <div className="rhythm-lesson">
@@ -49,7 +49,7 @@ export function LessonRunner({
         </p>
       ) : null}
       {lesson.kind === 'ready' ? (
-        <Drill lesson={lesson.value} settings={settings} recognition={recognition} />
+        <Drill lesson={lesson.value} settings={settings} speaker={speaker} />
       ) : null}
     </div>
   );
@@ -58,15 +58,67 @@ export function LessonRunner({
 interface DrillProps {
   readonly lesson: Lesson;
   readonly settings: RhythmSettings;
-  readonly recognition: RecognitionFactory | null;
+  readonly speaker: Speaker | null;
 }
 
-function Drill({ lesson, settings, recognition }: DrillProps): ReactElement {
+const MARK_KEYS: Readonly<Record<string, Verdict>> = { '1': 'correct', '2': 'close', '3': 'wrong' };
+
+/** Tape mode keys: space or Enter = done; 1/2/3 = mark; R = read the answer again. */
+function onTapeKey(kind: 'cue' | 'reveal', key: string, session: RhythmSession): boolean {
+  if (kind === 'cue') {
+    if (key === ' ' || key === 'enter') {
+      session.done();
+      return true;
+    }
+    return false;
+  }
+  const verdict = MARK_KEYS[key];
+  if (verdict !== undefined) {
+    session.mark(verdict);
+    return true;
+  }
+  if (key === 'r') {
+    session.readAgain();
+    return true;
+  }
+  return false;
+}
+
+function isTyping(target: EventTarget | null): boolean {
+  return target instanceof HTMLInputElement || target instanceof HTMLSelectElement;
+}
+
+function useTapeKeys(session: RhythmSession): void {
+  const stage = session.data.stage.kind;
+  const kind =
+    session.data.mode === 'tape' && (stage === 'cue' || stage === 'reveal') ? stage : null;
+  useEffect(() => {
+    if (kind === null) {
+      return undefined;
+    }
+    const onKey = (event: KeyboardEvent): void => {
+      if (
+        !event.repeat &&
+        !isTyping(event.target) &&
+        onTapeKey(kind, event.key.toLowerCase(), session)
+      ) {
+        event.preventDefault();
+      }
+    };
+    globalThis.addEventListener('keydown', onKey);
+    return () => {
+      globalThis.removeEventListener('keydown', onKey);
+    };
+  }, [kind, session]);
+}
+
+function Drill({ lesson, settings, speaker }: DrillProps): ReactElement {
   const plan = useMemo(
     () => buildPlan(lesson.cards, settings.repetitions),
     [lesson, settings.repetitions],
   );
-  const session = useRhythmSession(plan, settings, recognition);
+  const session = useRhythmSession(plan, settings, speaker);
+  useTapeKeys(session);
   const { data, turn } = session;
   return (
     <div className="drill">
@@ -79,11 +131,6 @@ function Drill({ lesson, settings, recognition }: DrillProps): ReactElement {
           />
         </p>
       )}
-      {data.notice === null ? null : (
-        <p className="alert" role="alert">
-          {data.notice}
-        </p>
-      )}
       <StageBody session={session} limitSeconds={settings.limitSeconds} />
     </div>
   );
@@ -93,7 +140,7 @@ function StageBody({
   session,
   limitSeconds,
 }: {
-  readonly session: ReturnType<typeof useRhythmSession>;
+  readonly session: RhythmSession;
   readonly limitSeconds: number;
 }): ReactElement | null {
   const { data, turn } = session;
@@ -104,7 +151,7 @@ function StageBody({
   if (stage.kind === 'error') {
     return (
       <p className="alert" role="alert">
-        判分失败：{stage.message}
+        保存失败：{stage.message}
       </p>
     );
   }
@@ -114,18 +161,16 @@ function StageBody({
   switch (stage.kind) {
     case 'intro':
       return <Intro turn={turn} onBegin={session.begin} />;
-    case 'prompt':
+    case 'cue':
+      return <CueBody session={session} stage={stage} turn={turn} limitSeconds={limitSeconds} />;
+    case 'reveal':
       return (
-        <Prompt
+        <Reveal
           turn={turn}
-          index={data.index}
           stage={stage}
-          voice={data.mode === 'voice'}
           limitSeconds={limitSeconds}
-          onStartTyping={session.startTyping}
-          onAnswer={session.answer}
-          onRetry={session.retry}
-          onSwitchToTyping={session.switchToTyping}
+          onReadAgain={session.readAgain}
+          onMark={session.mark}
         />
       );
     case 'checking':
@@ -142,4 +187,29 @@ function StageBody({
         />
       );
   }
+}
+
+function CueBody({
+  session,
+  stage,
+  turn,
+  limitSeconds,
+}: {
+  readonly session: RhythmSession;
+  readonly stage: Extract<RhythmSession['data']['stage'], { kind: 'cue' }>;
+  readonly turn: NonNullable<RhythmSession['turn']>;
+  readonly limitSeconds: number;
+}): ReactElement {
+  return session.data.mode === 'tape' ? (
+    <TapeCue turn={turn} stage={stage} limitSeconds={limitSeconds} onDone={session.done} />
+  ) : (
+    <TypedCue
+      key={session.data.index}
+      turn={turn}
+      stage={stage}
+      limitSeconds={limitSeconds}
+      onTyped={session.typed}
+      onAnswer={session.answer}
+    />
+  );
 }

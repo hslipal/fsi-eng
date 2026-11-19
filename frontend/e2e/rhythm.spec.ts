@@ -1,15 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-// Stubbed run: a timed lesson answered by typing (headless browsers have no speech recognition).
+// Stubbed run: a tape-style lesson (cue, answer aloud, model answer, self-grade), silent browser.
 // Fullstack run: the section loads against the real backend.
 const fullstack = process.env['E2E_MODE'] === 'fullstack';
 
 const LESSON_ID = '3f2a9c1e-5b7d-4e8a-9c21-7d4e5f6a8b90';
 
-test('a learner runs a timed substitution drill', async ({ page }) => {
+test('a learner runs a tape-style substitution drill', async ({ page }) => {
   await page.addInitScript(() => {
-    Reflect.deleteProperty(globalThis, 'SpeechRecognition');
-    Reflect.deleteProperty(globalThis, 'webkitSpeechRecognition');
+    Object.defineProperty(globalThis, 'speechSynthesis', { value: undefined });
   });
   if (!fullstack) {
     await page.route('**/api/practice/lessons?track=business', async (route) => {
@@ -41,12 +40,13 @@ test('a learner runs a timed substitution drill', async ({ page }) => {
               cue: 'milk',
               options: [],
               base: null,
+              answer: 'I want milk.',
             },
           ],
         },
       });
     });
-    await page.route('**/api/practice/answers', async (route) => {
+    await page.route('**/api/practice/self-grades', async (route) => {
       await route.fulfill({
         json: {
           verdict: 'correct',
@@ -70,10 +70,10 @@ test('a learner runs a timed substitution drill', async ({ page }) => {
   await rhythm.getByRole('button', { name: '开始替换练习' }).click();
   for (let turn = 1; turn <= 5; turn++) {
     await expect(rhythm.getByText(`替换练习 第 ${String(turn)}/5 次`)).toBeVisible();
-    await rhythm.getByLabel('你的答案（回车提交）').fill('I want milk');
-    await rhythm.getByLabel('你的答案（回车提交）').press('Enter');
-    await expect(rhythm.getByText('正确')).toBeVisible();
-    await rhythm.getByRole('button', { name: '下一题' }).click();
+    await expect(rhythm.getByText('大声说出整句', { exact: true })).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(rhythm.getByText('I want milk.')).toBeVisible();
+    await page.keyboard.press('1');
   }
 
   await expect(rhythm.getByRole('heading', { name: '这一课练完了' })).toBeVisible();

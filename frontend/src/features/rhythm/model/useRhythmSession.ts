@@ -1,95 +1,98 @@
 import { useEffect, useReducer, type ActionDispatch } from 'react';
-import { submitTimedAnswer } from '../api/rhythmApi';
+import { submitSelfGrade, submitTimedAnswer } from '../api/rhythmApi';
+import type { Verdict } from './lesson';
 import type { Turn } from './plan';
 import {
   autoAdvanceMs,
-  listenKey,
+  pauseSince,
   pendingAnswer,
-  reduce,
+  pendingMark,
   startSession,
+  toRead,
   waitingSince,
   type Action,
   type InputMode,
   type SessionData,
 } from './rhythm';
-import { FATAL_SPEECH_ERRORS, type RecognitionFactory } from './speech';
+import { reduce } from './reduce';
 import { describeError } from './useLesson';
+import type { Speaker } from './voice';
 
 type Dispatch = ActionDispatch<[action: Action]>;
+
+export interface SessionOptions {
+  readonly limitSeconds: number;
+  readonly mode: InputMode;
+  /** Typing mode: feedback moves on by itself; otherwise it waits for "next". */
+  readonly autoAdvance: boolean;
+}
 
 export interface RhythmSession {
   readonly data: SessionData;
   readonly turn: Turn | undefined;
-  /** From a drill's introduction to its first prompt. */
   readonly begin: () => void;
-  /** Typing mode: the first keystroke ends the reaction time. */
-  readonly startTyping: () => void;
+  /** Tape mode: the learner has said the answer. */
+  readonly done: () => void;
+  readonly readAgain: () => void;
+  readonly mark: (verdict: Verdict) => void;
+  /** Typing mode. */
+  readonly typed: () => void;
   readonly answer: (text: string) => void;
-  /** Voice mode: listen again after nothing was heard. */
-  readonly retry: () => void;
-  readonly switchToTyping: () => void;
   readonly next: () => void;
   readonly togglePause: () => void;
 }
 
-const MIC_BLOCKED = '无法使用麦克风，已改为打字作答。可以在浏览器地址栏允许麦克风后刷新页面。';
+function useReading(data: SessionData, speaker: Speaker | null, dispatch: Dispatch): void {
+  const reading = toRead(data);
+  const key = reading?.key ?? null;
+  const text = reading?.text ?? '';
+  useEffect(() => {
+    if (key === null) {
+      return undefined;
+    }
+    let current = true;
+    const cueRead = (): void => {
+      if (current && key.startsWith('cue:')) {
+        dispatch({ type: 'cue-read', now: Date.now() });
+      }
+    };
+    if (speaker === null) {
+      cueRead();
+    } else {
+      void speaker.speak(text).then(cueRead);
+    }
+    return () => {
+      current = false;
+      speaker?.cancel();
+    };
+  }, [key, text, speaker, dispatch]);
+}
 
-function useLateReminder(data: SessionData, dispatch: Dispatch): void {
-  const since = waitingSince(data);
-  const limitMs = data.limitMs;
+const LATE: Action = { type: 'late' };
+
+function useTimer(
+  since: number | null,
+  limitMs: number,
+  timeout: Action,
+  dispatch: Dispatch,
+): void {
   useEffect(() => {
     if (since === null) {
       return undefined;
     }
     const timer = setTimeout(
       () => {
-        dispatch({ type: 'late' });
+        dispatch(timeout.type === 'reveal' ? { ...timeout, now: Date.now() } : timeout);
       },
       Math.max(0, limitMs - (Date.now() - since)),
     );
     return () => {
       clearTimeout(timer);
     };
-  }, [since, limitMs, dispatch]);
+  }, [since, limitMs, timeout, dispatch]);
 }
 
-function useListening(
-  data: SessionData,
-  recognition: RecognitionFactory | null,
-  dispatch: Dispatch,
-): void {
-  const key = listenKey(data);
-  useEffect(() => {
-    if (key === null || recognition === null) {
-      return undefined;
-    }
-    const listener = recognition({
-      onSpeechStart: () => {
-        dispatch({ type: 'speech-start', now: Date.now() });
-      },
-      onInterim: (text) => {
-        dispatch({ type: 'interim', text });
-      },
-      onResult: (text) => {
-        dispatch({ type: 'answered', text, now: Date.now() });
-      },
-      onNoSpeech: () => {
-        dispatch({ type: 'no-speech' });
-      },
-      onError: (code) => {
-        dispatch(
-          FATAL_SPEECH_ERRORS.includes(code)
-            ? { type: 'typing', notice: MIC_BLOCKED }
-            : { type: 'no-speech' },
-        );
-      },
-    });
-    listener.start();
-    return () => {
-      listener.stop();
-    };
-  }, [key, recognition, dispatch]);
-}
+const TIMED_OUT: Action = { type: 'reveal', now: 0, timedOut: true };
 
 function useGrading(data: SessionData, dispatch: Dispatch): void {
   const pending = pendingAnswer(data);
@@ -119,6 +122,34 @@ function useGrading(data: SessionData, dispatch: Dispatch): void {
   }, [cardKey, answer, slow, dispatch]);
 }
 
+function useMarking(data: SessionData, dispatch: Dispatch): void {
+  const pending = pendingMark(data);
+  const cardKey = pending?.cardKey ?? null;
+  const verdict = pending?.verdict ?? null;
+  const slow = pending?.slow ?? false;
+  useEffect(() => {
+    if (cardKey === null || verdict === null) {
+      return undefined;
+    }
+    let current = true;
+    submitSelfGrade(cardKey, verdict, slow).then(
+      () => {
+        if (current) {
+          dispatch({ type: 'marked' });
+        }
+      },
+      (error: unknown) => {
+        if (current) {
+          dispatch({ type: 'failed', message: describeError(error) });
+        }
+      },
+    );
+    return () => {
+      current = false;
+    };
+  }, [cardKey, verdict, slow, dispatch]);
+}
+
 function useAutoAdvance(data: SessionData, dispatch: Dispatch): void {
   const delay = autoAdvanceMs(data);
   const index = data.index;
@@ -127,7 +158,7 @@ function useAutoAdvance(data: SessionData, dispatch: Dispatch): void {
       return undefined;
     }
     const timer = setTimeout(() => {
-      dispatch({ type: 'advance', now: Date.now() });
+      dispatch({ type: 'advance' });
     }, delay);
     return () => {
       clearTimeout(timer);
@@ -136,52 +167,48 @@ function useAutoAdvance(data: SessionData, dispatch: Dispatch): void {
 }
 
 /**
- * A timed FSI lesson: every prompt starts a clock and the learner should start answering within
- * the limit. Spoken answers are recognised in the browser and graded by the server; feedback moves
- * on by itself unless paused.
+ * A timed FSI lesson. Tape mode: each cue is read aloud, the learner answers aloud within the
+ * pause, hears the model answer, repeats it and marks themselves. Typing mode: the learner types
+ * and the server grades.
  */
-export interface SessionOptions {
-  readonly limitSeconds: number;
-  readonly mode: InputMode;
-  /** Feedback moves on by itself; otherwise it waits for "next". */
-  readonly autoAdvance: boolean;
-}
-
 export function useRhythmSession(
   plan: readonly Turn[],
   options: SessionOptions,
-  recognition: RecognitionFactory | null,
+  speaker: Speaker | null,
 ): RhythmSession {
-  const { limitSeconds, mode, autoAdvance } = options;
   const [data, dispatch] = useReducer(reduce, null, () =>
-    startSession(plan, limitSeconds, recognition === null ? 'typing' : mode, autoAdvance),
+    startSession(plan, options.limitSeconds, options.mode, options.autoAdvance),
   );
-  useLateReminder(data, dispatch);
-  useListening(data, recognition, dispatch);
+  useReading(data, speaker, dispatch);
+  useTimer(pauseSince(data), data.limitMs, TIMED_OUT, dispatch);
+  useTimer(waitingSince(data), data.limitMs, LATE, dispatch);
   useGrading(data, dispatch);
+  useMarking(data, dispatch);
   useAutoAdvance(data, dispatch);
 
-  const now = (): number => Date.now();
   return {
     data,
     turn: data.plan[data.index],
     begin: () => {
-      dispatch({ type: 'begin', now: now() });
+      dispatch({ type: 'begin' });
     },
-    startTyping: () => {
-      dispatch({ type: 'speech-start', now: now() });
+    done: () => {
+      dispatch({ type: 'reveal', now: Date.now(), timedOut: false });
+    },
+    readAgain: () => {
+      dispatch({ type: 'read-again' });
+    },
+    mark: (verdict) => {
+      dispatch({ type: 'mark', verdict });
+    },
+    typed: () => {
+      dispatch({ type: 'typed', now: Date.now() });
     },
     answer: (text) => {
-      dispatch({ type: 'answered', text, now: now() });
-    },
-    retry: () => {
-      dispatch({ type: 'retry' });
-    },
-    switchToTyping: () => {
-      dispatch({ type: 'typing', notice: null });
+      dispatch({ type: 'answered', text, now: Date.now() });
     },
     next: () => {
-      dispatch({ type: 'advance', now: now() });
+      dispatch({ type: 'advance' });
     },
     togglePause: () => {
       dispatch({ type: 'toggle-pause' });
