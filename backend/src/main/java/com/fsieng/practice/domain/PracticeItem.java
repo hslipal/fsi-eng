@@ -5,7 +5,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One auto-gradable question: a cue plus every answer we accept. Reading questions also carry their
- * passage and the options to choose from.
+ * passage and the options to choose from; items of a chained drill carry the sentence they build on
+ * ({@code base}).
  */
 public record PracticeItem(
     CardKey key,
@@ -16,7 +17,8 @@ public record PracticeItem(
     @Nullable String passage,
     String cue,
     List<String> options,
-    List<String> answers) {
+    List<String> answers,
+    @Nullable String base) {
 
   public PracticeItem {
     if (answers.isEmpty()) {
@@ -24,6 +26,20 @@ public record PracticeItem(
     }
     options = List.copyOf(options);
     answers = List.copyOf(answers);
+  }
+
+  /** An item that does not build on a previous sentence. */
+  public PracticeItem(
+      CardKey key,
+      String title,
+      String type,
+      String instruction,
+      @Nullable String model,
+      @Nullable String passage,
+      String cue,
+      List<String> options,
+      List<String> answers) {
+    this(key, title, type, instruction, model, passage, cue, options, answers, null);
   }
 
   /** A typed-answer item without passage or options. */
@@ -35,6 +51,6 @@ public record PracticeItem(
       @Nullable String model,
       String cue,
       List<String> answers) {
-    this(key, title, type, instruction, model, null, cue, List.of(), answers);
+    this(key, title, type, instruction, model, null, cue, List.of(), answers, null);
   }
 }

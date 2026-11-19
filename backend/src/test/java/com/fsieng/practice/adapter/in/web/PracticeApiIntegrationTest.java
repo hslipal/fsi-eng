@@ -28,7 +28,11 @@ class PracticeApiIntegrationTest {
       [{"type": "substitution", "instruction": "Replace the document.",
         "model": "Could you send me the quote by Friday?",
         "items": [{"cue": "contract", "answers": ["Could you send me the contract by Friday?"]},
-                  {"cue": "invoice", "answers": ["Could you send me the invoice by Friday?"]}]}]
+                  {"cue": "invoice", "answers": ["Could you send me the invoice by Friday?"]}]},
+       {"type": "expansion", "instruction": "Change the sentence with the cue.", "chained": true,
+        "model": "There's a cup on the table.",
+        "items": [{"cue": "spoon", "answers": ["There's a spoon on the table."]},
+                  {"cue": "on the chair", "answers": ["There's a spoon on the chair."]}]}]
       """;
 
   private final ContentItemJpaRepository content;
@@ -94,7 +98,7 @@ class PracticeApiIntegrationTest {
   void cardsComeWithoutAnswers() {
     List<Map<String, Object>> cards = cards("ana");
 
-    assertThat(cards).hasSize(2);
+    assertThat(cards).hasSize(4);
     assertThat(cards.getFirst())
         .containsEntry("cardKey", CONTENT_ID + ":0:0")
         .containsEntry("cue", "contract")
@@ -114,8 +118,8 @@ class PracticeApiIntegrationTest {
         .containsEntry("box", 1);
     assertThat(cards("ana"))
         .extracting(card -> String.valueOf(card.get("cue")))
-        .containsExactly("invoice");
-    assertThat(cards("ben")).hasSize(2);
+        .containsExactly("invoice", "spoon", "on the chair");
+    assertThat(cards("ben")).hasSize(4);
   }
 
   @Test
@@ -160,5 +164,83 @@ class PracticeApiIntegrationTest {
 
     assertThat(limit).isEqualTo(400);
     assertThat(learner).isEqualTo(400);
+  }
+
+  private <T> T get(String path, ParameterizedTypeReference<T> type) {
+    return Objects.requireNonNull(client.get().uri(path).retrieve().body(type));
+  }
+
+  @Test
+  void listsLessonsWithTheirStepsInFsiOrder() {
+    List<Map<String, Object>> lessons =
+        get(
+            "/api/practice/lessons?track=business",
+            new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+
+    assertThat(lessons)
+        .singleElement()
+        .satisfies(lesson -> {
+          assertThat(lesson)
+              .containsEntry("id", CONTENT_ID.toString())
+              .containsEntry("title", "Requesting a quote")
+              .containsEntry("level", "ILR 1+");
+          assertThat(lesson.get("steps"))
+              .isEqualTo(
+                  List.of(
+                      Map.of("type", "substitution", "count", 2),
+                      Map.of("type", "expansion", "count", 2)));
+        });
+  }
+
+  @Test
+  void aLessonHasItsCardsInOrderAndChainedCardsCarryTheirBase() {
+    Map<String, Object> lesson =
+        get(
+            "/api/practice/lessons/" + CONTENT_ID,
+            new ParameterizedTypeReference<Map<String, Object>>() {});
+
+    assertThat(lesson).containsEntry("title", "Requesting a quote");
+    assertThat(lesson.get("cards"))
+        .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.LIST)
+        .extracting(card -> ((Map<?, ?>) card).get("base"))
+        .containsExactly(
+            null, null, "There's a cup on the table.", "There's a spoon on the table.");
+  }
+
+  @Test
+  void anUnknownLessonIsNotFound() {
+    int status =
+        client
+            .get()
+            .uri("/api/practice/lessons/nope")
+            .retrieve()
+            .onStatus(HttpStatusCode::isError, (_, _) -> {})
+            .toBodilessEntity()
+            .getStatusCode()
+            .value();
+
+    assertThat(status).isEqualTo(404);
+  }
+
+  @Test
+  void aSlowCorrectAnswerStaysInBoxZero() {
+    Map<String, Object> feedback =
+        Objects.requireNonNull(
+            client
+                .post()
+                .uri("/api/practice/answers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    Map.of(
+                        "cardKey",
+                        CONTENT_ID + ":0:0",
+                        "answer",
+                        "Could you send me the contract by Friday",
+                        "slow",
+                        true))
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {}));
+
+    assertThat(feedback).containsEntry("verdict", "correct").containsEntry("box", 0);
   }
 }

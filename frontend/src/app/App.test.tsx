@@ -8,16 +8,19 @@ describe('App', () => {
     vi.unstubAllGlobals();
   });
 
-  it('opens on the drills and switches sections from the navigation', async () => {
+  it('opens on rhythm training and switches sections from the navigation', async () => {
     stubFetch(200, []);
     const user = userEvent.setup();
     render(<App />);
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('FSI-Eng');
-    expect(screen.getByRole('button', { name: '句型操练' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: '节奏训练' })).toHaveAttribute(
       'aria-current',
       'page',
     );
+    expect(await screen.findByText('这个赛道还没有可以练的句型。')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '句型操练' }));
     expect(await screen.findByText('这个赛道现在没有要练的题。')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '素材库' }));

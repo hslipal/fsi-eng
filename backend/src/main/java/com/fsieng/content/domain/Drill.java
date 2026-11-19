@@ -25,15 +25,37 @@ public sealed interface Drill
     }
   }
 
-  /** Substitution, transformation, expansion, translation or response drill. */
-  record PatternDrill(DrillType type, String instruction, @Nullable String model, List<Item> items)
+  /**
+   * Substitution, transformation, expansion, translation or response drill. In a chained drill each
+   * item builds on the sentence before it: the first on the model, every later one on the previous
+   * item's first answer (FSI expansion: "There's a cup on the table." → spoon → on the chair).
+   */
+  record PatternDrill(
+      DrillType type, String instruction, @Nullable String model, List<Item> items, boolean chained)
       implements Drill {
     public PatternDrill {
       requireText(instruction, "drill instruction");
       if (items.isEmpty()) {
         throw new InvalidContentException("a " + type.code() + " drill needs at least one item");
       }
+      if (chained && (model == null || model.isBlank())) {
+        throw new InvalidContentException("a chained drill needs a model sentence to start from");
+      }
       items = List.copyOf(items);
+    }
+
+    /** An unchained drill: every item stands on its own. */
+    public PatternDrill(
+        DrillType type, String instruction, @Nullable String model, List<Item> items) {
+      this(type, instruction, model, items, false);
+    }
+
+    /** The sentence item {@code index} builds on, or null when the drill is not chained. */
+    public @Nullable String baseOf(int index) {
+      if (!chained) {
+        return null;
+      }
+      return index == 0 ? model : items.get(index - 1).answers().getFirst();
     }
   }
 

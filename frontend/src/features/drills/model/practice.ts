@@ -37,6 +37,8 @@ export const CardSchema = z.object({
   passage: z.string().nullable(),
   cue: z.string(),
   options: z.array(z.string()),
+  /** Chained drills: the sentence this cue changes. Older servers omit it. */
+  base: z.string().nullable().default(null),
 });
 export type Card = z.infer<typeof CardSchema>;
 export const CardListSchema = z.array(CardSchema);

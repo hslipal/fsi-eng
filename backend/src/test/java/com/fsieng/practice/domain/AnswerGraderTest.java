@@ -79,4 +79,41 @@ class AnswerGraderTest {
     assertThatThrownBy(() -> grader.gradeChoice("A", List.of()))
         .isInstanceOf(InvalidPracticeException.class);
   }
+
+  @Test
+  void spokenAnswersWithoutCommasOrWithContractionsWrittenOutAreCorrect() {
+    List<String> answers =
+        List.of("Because of a customs inspection, the shipment will arrive on 12 March.");
+    assertThat(
+            grader
+                .grade(
+                    "because of a customs inspection the shipment will arrive on 12 March", answers)
+                .verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(
+            grader
+                .grade("I am afraid the price is a little higher than we expected", accepted)
+                .verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(grader.grade("Do not smoke so often!", List.of("Don't smoke so often!")).verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(grader.grade("We cannot ship it.", List.of("We can't ship it.")).verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(grader.grade("It will not work.", List.of("It won't work.")).verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(
+            grader
+                .grade(
+                    "They are here and we have been told.",
+                    List.of("They're here and we've been told."))
+                .verdict())
+        .isEqualTo(Verdict.CORRECT);
+    assertThat(grader.grade("We will call you.", List.of("We'll call you.")).verdict())
+        .isEqualTo(Verdict.CORRECT);
+  }
+
+  @Test
+  void ambiguousContractionsAreNotExpanded() {
+    assertThat(AnswerGrader.normalize("He's here, she'd go.")).isEqualTo("he's here she'd go");
+  }
 }

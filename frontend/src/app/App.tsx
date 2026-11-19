@@ -2,17 +2,19 @@ import { useState, type ReactElement } from 'react';
 import { DrillPanel } from '@/features/drills';
 import { IeltsPanel } from '@/features/ielts';
 import { LibraryPanel } from '@/features/library';
+import { RhythmPanel } from '@/features/rhythm';
 
-type Section = 'drills' | 'ielts' | 'library';
+type Section = 'rhythm' | 'drills' | 'ielts' | 'library';
 
 const SECTIONS: readonly { readonly id: Section; readonly label: string }[] = [
+  { id: 'rhythm', label: '节奏训练' },
   { id: 'drills', label: '句型操练' },
   { id: 'ielts', label: '雅思写作与口语' },
   { id: 'library', label: '素材库' },
 ];
 
 export function App(): ReactElement {
-  const [section, setSection] = useState<Section>('drills');
+  const [section, setSection] = useState<Section>('rhythm');
 
   return (
     <div className="shell">
@@ -36,6 +38,7 @@ export function App(): ReactElement {
         </nav>
       </header>
       <main className="main">
+        {section === 'rhythm' ? <RhythmPanel /> : null}
         {section === 'drills' ? <DrillPanel /> : null}
         {section === 'ielts' ? <IeltsPanel /> : null}
         {section === 'library' ? <LibraryPanel /> : null}

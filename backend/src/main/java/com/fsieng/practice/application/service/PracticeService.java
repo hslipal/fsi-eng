@@ -1,6 +1,7 @@
 package com.fsieng.practice.application.service;
 
 import com.fsieng.practice.application.port.in.GetDueCardsUseCase;
+import com.fsieng.practice.application.port.in.GetLessonsUseCase;
 import com.fsieng.practice.application.port.in.SubmitAnswerUseCase;
 import com.fsieng.practice.application.port.out.DrillCatalogPort;
 import com.fsieng.practice.application.port.out.ReviewCardStorePort;
@@ -9,9 +10,12 @@ import com.fsieng.practice.domain.CardKey;
 import com.fsieng.practice.domain.Feedback;
 import com.fsieng.practice.domain.Grade;
 import com.fsieng.practice.domain.LearnerId;
+import com.fsieng.practice.domain.Lesson;
+import com.fsieng.practice.domain.LessonNotFoundException;
 import com.fsieng.practice.domain.PracticeItem;
 import com.fsieng.practice.domain.ReviewCard;
 import com.fsieng.practice.domain.UnknownCardException;
+import com.fsieng.practice.domain.Verdict;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Comparator;
@@ -23,7 +27,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class PracticeService implements GetDueCardsUseCase, SubmitAnswerUseCase {
+public final class PracticeService
+    implements GetDueCardsUseCase, SubmitAnswerUseCase, GetLessonsUseCase {
 
   private final DrillCatalogPort catalog;
   private final ReviewCardStorePort cards;
@@ -58,7 +63,7 @@ public final class PracticeService implements GetDueCardsUseCase, SubmitAnswerUs
   }
 
   @Override
-  public Feedback submit(LearnerId learner, CardKey key, String answer) {
+  public Feedback submit(LearnerId learner, CardKey key, String answer, boolean slow) {
     PracticeItem item = catalog.find(key).orElseThrow(() -> new UnknownCardException(key));
     Instant now = clock.instant();
     Grade grade =
@@ -67,8 +72,26 @@ public final class PracticeService implements GetDueCardsUseCase, SubmitAnswerUs
             : grader.gradeChoice(answer, item.answers());
     ReviewCard before =
         cards.find(learner, key).orElseGet(() -> ReviewCard.fresh(learner, key, now));
-    ReviewCard after = before.after(grade.verdict(), now);
+    ReviewCard after = before.after(scheduled(grade.verdict(), slow), now);
     cards.save(after);
     return new Feedback(grade, after);
+  }
+
+  @Override
+  public List<Lesson> lessons(String track) {
+    return catalog.lessonsFor(track).stream().filter(lesson -> !lesson.isEmpty()).toList();
+  }
+
+  @Override
+  public Lesson lesson(String id) {
+    return catalog
+        .lesson(id)
+        .filter(found -> !found.isEmpty())
+        .orElseThrow(() -> new LessonNotFoundException(id));
+  }
+
+  /** A correct but slow answer is scheduled like a close one. */
+  private static Verdict scheduled(Verdict verdict, boolean slow) {
+    return slow && verdict == Verdict.CORRECT ? Verdict.CLOSE : verdict;
   }
 }

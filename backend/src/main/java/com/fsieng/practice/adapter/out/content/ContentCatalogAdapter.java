@@ -6,6 +6,7 @@ import com.fsieng.content.domain.Drill;
 import com.fsieng.content.domain.Track;
 import com.fsieng.practice.application.port.out.DrillCatalogPort;
 import com.fsieng.practice.domain.CardKey;
+import com.fsieng.practice.domain.Lesson;
 import com.fsieng.practice.domain.PracticeItem;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,20 +43,33 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
         .findFirst();
   }
 
+  @Override
+  public List<Lesson> lessonsFor(String track) {
+    return publishedContent.listPublished(Track.fromCode(track)).stream()
+        .map(ContentCatalogAdapter::lessonOf)
+        .toList();
+  }
+
+  @Override
+  public Optional<Lesson> lesson(String id) {
+    return Arrays.stream(Track.values())
+        .flatMap(track -> publishedContent.listPublished(track).stream())
+        .filter(content -> content.id().value().toString().equals(id))
+        .findFirst()
+        .map(ContentCatalogAdapter::lessonOf);
+  }
+
+  private static Lesson lessonOf(ContentItem content) {
+    return new Lesson(
+        content.id().value().toString(), content.title(), content.level(), itemsOf(content));
+  }
+
   private static List<PracticeItem> itemsOf(ContentItem content) {
     List<PracticeItem> items = new ArrayList<>();
     for (int d = 0; d < content.drills().size(); d++) {
       Drill drill = content.drills().get(d);
       if (drill instanceof Drill.PatternDrill pattern) {
-        addAll(
-            items,
-            content,
-            d,
-            pattern.type().code(),
-            pattern.instruction(),
-            pattern.model(),
-            null,
-            pattern.items());
+        addPattern(items, content, d, pattern);
       } else if (drill instanceof Drill.Reading reading) {
         addAll(
             items,
@@ -69,6 +83,25 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
       }
     }
     return items;
+  }
+
+  private static void addPattern(
+      List<PracticeItem> into, ContentItem content, int drillIndex, Drill.PatternDrill pattern) {
+    for (int i = 0; i < pattern.items().size(); i++) {
+      Drill.Item item = pattern.items().get(i);
+      into.add(
+          new PracticeItem(
+              CardKey.of(content.id().value(), drillIndex, i),
+              content.title(),
+              pattern.type().code(),
+              pattern.instruction(),
+              pattern.model(),
+              null,
+              item.cue(),
+              item.options(),
+              item.answers(),
+              pattern.baseOf(i)));
+    }
   }
 
   private static void addAll(

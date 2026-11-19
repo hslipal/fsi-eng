@@ -89,4 +89,40 @@ class DrillTest {
     assertThatThrownBy(() -> new Drill.Speaking("Answer aloud.", List.of()))
         .isInstanceOf(InvalidContentException.class);
   }
+
+  @Test
+  void aChainedDrillStartsFromItsModelAndBuildsOnEachAnswer() {
+    Drill.PatternDrill chain =
+        new Drill.PatternDrill(
+            DrillType.EXPANSION,
+            "Change the sentence with the cue.",
+            "There's a cup on the table.",
+            List.of(
+                new Drill.Item("spoon", List.of("There's a spoon on the table.")),
+                new Drill.Item("on the chair", List.of("There's a spoon on the chair."))),
+            true);
+
+    assertThat(chain.baseOf(0)).isEqualTo("There's a cup on the table.");
+    assertThat(chain.baseOf(1)).isEqualTo("There's a spoon on the table.");
+    assertThat(
+            new Drill.PatternDrill(
+                    DrillType.EXPANSION,
+                    "Add it.",
+                    "Base.",
+                    List.of(new Drill.Item("x", List.of("X."))))
+                .baseOf(0))
+        .isNull();
+  }
+
+  @Test
+  void aChainedDrillNeedsAModelSentence() {
+    List<Drill.Item> items = List.of(new Drill.Item("spoon", List.of("A spoon.")));
+    assertThatThrownBy(
+            () -> new Drill.PatternDrill(DrillType.EXPANSION, "Add it.", null, items, true))
+        .isInstanceOf(InvalidContentException.class)
+        .hasMessageContaining("model");
+    assertThatThrownBy(
+            () -> new Drill.PatternDrill(DrillType.EXPANSION, "Add it.", " ", items, true))
+        .isInstanceOf(InvalidContentException.class);
+  }
 }

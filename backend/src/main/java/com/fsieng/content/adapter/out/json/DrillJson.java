@@ -13,7 +13,19 @@ public record DrillJson(
     @Nullable String model,
     @Nullable String passage,
     @Nullable List<ItemJson> items,
-    @Nullable List<LineJson> lines) {
+    @Nullable List<LineJson> lines,
+    @Nullable Boolean chained) {
+
+  /** A drill that is not chained. */
+  public DrillJson(
+      @Nullable String type,
+      @Nullable String instruction,
+      @Nullable String model,
+      @Nullable String passage,
+      @Nullable List<ItemJson> items,
+      @Nullable List<LineJson> lines) {
+    this(type, instruction, model, passage, items, lines, null);
+  }
 
   /**
    * One question. Typed and choice items use cue/answers/options; speaking prompts use

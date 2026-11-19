@@ -65,10 +65,13 @@ and reading questions are cards; dialogues are not. Answers are never sent.
 | passage | string \| null | reading passage (paragraphs separated by a blank line) |
 | cue | string | |
 | options | string[] | empty for typed answers; reading questions list their choices |
+| base | string \| null | chained drills only: the sentence this cue changes (the model for the first item, then the previous item's answer) |
 
 ### POST /api/practice/answers
 
-Request `{ "cardKey": string, "answer": string (1-1000 chars) }`.
+Request `{ "cardKey": string, "answer": string (1-1000 chars), "slow"?: boolean }`.
+`slow` = the learner missed the time limit of a timed drill; a slow correct answer is scheduled
+like `close` (same box, back tomorrow) but the verdict stays `correct`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -78,6 +81,29 @@ Request `{ "cardKey": string, "answer": string (1-1000 chars) }`.
 | nextReviewAt | string (ISO-8601 instant) | box 1-5 wait 1/3/7/14/30 days; wrong: 10 minutes |
 
 Unknown card → `404`; blank answer, bad limit or learner id → `400`.
+
+Grading ignores case, spacing, curly quotes, commas and final punctuation, and writes out
+unambiguous contractions on both sides (`don't` = `do not`, `I'm` = `I am`; not `'s` or `'d`), so
+recognised speech grades like typing.
+
+### GET /api/practice/lessons?track={business|it|ielts}
+
+Published content items that have pattern drills, for timed FSI practice.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| id | string (UUID) | content item id |
+| title | string | |
+| level | string | |
+| steps | `{ type, count }[]` | drill types in practice order: `substitution`, `transformation`, `response`, `expansion` (types without items are left out) |
+
+### GET /api/practice/lessons/{id}
+
+`{ id, title, level, cards }`: `cards` are cards (see above) of those four types, in the same
+order, each drill's items in content order. Unknown id or no pattern drills → `404`.
+
+Backend: `LessonSummaryResponse`, `LessonResponse`. Frontend: `LessonSummarySchema`,
+`LessonSchema` (`frontend/src/features/rhythm/model/lesson.ts`).
 
 Backend: `CardResponse`, `FeedbackResponse`. Frontend: `CardSchema`, `FeedbackSchema`
 (`frontend/src/features/drills/model/practice.ts`).

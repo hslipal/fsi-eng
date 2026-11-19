@@ -1,15 +1,39 @@
 package com.fsieng.practice.domain;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
- * Grades a typed answer against the accepted answers. Case, repeated spaces, curly quotes and final
- * punctuation do not count; a small edit distance counts as {@link Verdict#CLOSE}.
+ * Grades a typed or spoken answer against the accepted answers. Case, repeated spaces, curly
+ * quotes, commas and final punctuation do not count, nor does writing out a contraction ("don't" =
+ * "do not"); a small edit distance counts as {@link Verdict#CLOSE}.
  */
 public final class AnswerGrader {
 
   private static final int CHARS_PER_ALLOWED_SLIP = 15;
+
+  /**
+   * Unambiguous contractions, written out, so "I'm" and "I am" grade the same (speech recognition
+   * picks either). "'s" and "'d" are left alone: they can mean is/has and would/had.
+   */
+  private static final Map<String, String> CONTRACTIONS = contractions();
+
+  private static Map<String, String> contractions() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("\\bcan't\\b", "cannot");
+    map.put("\\bwon't\\b", "will not");
+    map.put("\\bshan't\\b", "shall not");
+    map.put("\\bcan not\\b", "cannot");
+    map.put("n't\\b", " not");
+    map.put("\\bi'm\\b", "i am");
+    map.put("'re\\b", " are");
+    map.put("'ve\\b", " have");
+    map.put("'ll\\b", " will");
+    return Collections.unmodifiableMap(map);
+  }
 
   public Grade grade(String answer, List<String> accepted) {
     if (accepted.isEmpty()) {
@@ -51,11 +75,17 @@ public final class AnswerGrader {
   }
 
   static String normalize(String text) {
-    return text.replace('’', '\'')
-        .replace('‘', '\'')
-        .replace('“', '"')
-        .replace('”', '"')
-        .toLowerCase(Locale.ROOT)
+    String plain =
+        text.replace('’', '\'')
+            .replace('‘', '\'')
+            .replace('“', '"')
+            .replace('”', '"')
+            .toLowerCase(Locale.ROOT);
+    for (Map.Entry<String, String> contraction : CONTRACTIONS.entrySet()) {
+      plain = plain.replaceAll(contraction.getKey(), contraction.getValue());
+    }
+    return plain
+        .replaceAll("[,;:\"]", " ")
         .replaceAll("\\s+", " ")
         .strip()
         .replaceAll("[.!?]+$", "")
