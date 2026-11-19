@@ -202,7 +202,7 @@ class PracticeServiceTest {
     remember(1, Duration.ZERO);
 
     Feedback right = service.selfGrade(LEARNER, items.get(1).key(), Verdict.CORRECT, false);
-    assertThat(right.grade().expected()).isEqualTo("answer 1");
+    assertThat(right.grade().expected()).isEqualTo("Answer 1.");
     assertThat(right.card().box()).isEqualTo(2);
 
     Feedback slow = service.selfGrade(LEARNER, items.get(2).key(), Verdict.CORRECT, true);
