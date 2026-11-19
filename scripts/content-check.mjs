@@ -147,6 +147,12 @@ function drillProblem(drill) {
     return `type must be dialogue, reading, speaking or ${DRILL_TYPES.join(', ')}`;
   }
   if (!isText(drill.instruction)) return `a ${drill.type} drill needs an instruction`;
+  if (drill.chained !== undefined && typeof drill.chained !== 'boolean') {
+    return 'chained must be true or false';
+  }
+  if (drill.chained === true && !isText(drill.model)) {
+    return 'a chained drill needs a model sentence to start from';
+  }
   return itemsProblem(drill.items, false);
 }
 
