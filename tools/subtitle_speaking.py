@@ -12,7 +12,10 @@ only get translated again, so the tool can be stopped and run again at any time.
 Run it with Docker from the repository root (PowerShell or bash):
     docker run --rm -it -v "${PWD}:/work" -v fsi-whisper-cache:/root/.cache -w /work \
       --env-file .env python:3.12-slim \
-      sh -c "pip install -q 'faster-whisper>=1.1,<2' && python tools/subtitle_speaking.py"
+      sh -c "pip install -q 'faster-whisper>=1.1,<2' 'av>=11,<14' && python tools/subtitle_speaking.py"
+
+PyAV is pinned below 14: PyAV 14 dropped the open(metadata_errors=...) argument faster-whisper
+still passes ("TypeError: open() got an unexpected keyword argument 'metadata_errors'").
 
 Options: --dir <folder> (default content-dev/ielts/speaking-audio), --model <whisper model>
 (default small.en), --limit <n> (only the first n recordings), --force (redo existing),
