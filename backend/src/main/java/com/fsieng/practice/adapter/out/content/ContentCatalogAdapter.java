@@ -1,6 +1,6 @@
 package com.fsieng.practice.adapter.out.content;
 
-import com.fsieng.content.application.port.in.ListPublishedContentUseCase;
+import com.fsieng.content.application.port.in.ListPracticeContentUseCase;
 import com.fsieng.content.domain.ContentItem;
 import com.fsieng.content.domain.Drill;
 import com.fsieng.content.domain.Track;
@@ -15,21 +15,22 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Turns published content into practice items. Only pattern drills are auto-graded; dialogues are
- * for listening and memorising and are not practice cards.
+ * Turns practice content (published, plus dev-only in the dev profile) into practice items. Only
+ * pattern drills are auto-graded; dialogues are for listening and memorising and are not practice
+ * cards.
  */
 public class ContentCatalogAdapter implements DrillCatalogPort {
 
-  private final ListPublishedContentUseCase publishedContent;
+  private final ListPracticeContentUseCase practiceContent;
 
-  public ContentCatalogAdapter(ListPublishedContentUseCase publishedContent) {
-    this.publishedContent = publishedContent;
+  public ContentCatalogAdapter(ListPracticeContentUseCase practiceContent) {
+    this.practiceContent = practiceContent;
   }
 
   @Override
   public List<PracticeItem> itemsFor(String track) {
     List<PracticeItem> items = new ArrayList<>();
-    for (ContentItem content : publishedContent.listPublished(Track.fromCode(track))) {
+    for (ContentItem content : practiceContent.listForPractice(Track.fromCode(track))) {
       items.addAll(itemsOf(content));
     }
     return items;
@@ -45,7 +46,7 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
 
   @Override
   public List<Lesson> lessonsFor(String track) {
-    return publishedContent.listPublished(Track.fromCode(track)).stream()
+    return practiceContent.listForPractice(Track.fromCode(track)).stream()
         .map(ContentCatalogAdapter::lessonOf)
         .toList();
   }
@@ -53,7 +54,7 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
   @Override
   public Optional<Lesson> lesson(String id) {
     return Arrays.stream(Track.values())
-        .flatMap(track -> publishedContent.listPublished(track).stream())
+        .flatMap(track -> practiceContent.listForPractice(track).stream())
         .filter(content -> content.id().value().toString().equals(id))
         .findFirst()
         .map(ContentCatalogAdapter::lessonOf);
@@ -61,7 +62,11 @@ public class ContentCatalogAdapter implements DrillCatalogPort {
 
   private static Lesson lessonOf(ContentItem content) {
     return new Lesson(
-        content.id().value().toString(), content.title(), content.level(), itemsOf(content));
+        content.id().value().toString(),
+        content.title(),
+        content.level(),
+        itemsOf(content),
+        !content.license().publishable());
   }
 
   private static List<PracticeItem> itemsOf(ContentItem content) {

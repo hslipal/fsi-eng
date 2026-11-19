@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * A lesson without its questions. Mirrors frontend LessonSummarySchema; see docs/api-contract.md.
  */
-public record LessonSummaryResponse(String id, String title, String level, List<Step> steps) {
+public record LessonSummaryResponse(
+    String id, String title, String level, List<Step> steps, boolean devOnly) {
 
   /** How many items the lesson has of one drill type. */
   public record Step(String type, long count) {}
@@ -17,6 +18,7 @@ public record LessonSummaryResponse(String id, String title, String level, List<
             .map(type -> new Step(type, lesson.count(type)))
             .filter(step -> step.count() > 0)
             .toList();
-    return new LessonSummaryResponse(lesson.id(), lesson.title(), lesson.level(), steps);
+    return new LessonSummaryResponse(
+        lesson.id(), lesson.title(), lesson.level(), steps, lesson.devOnly());
   }
 }

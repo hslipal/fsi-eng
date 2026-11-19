@@ -16,6 +16,7 @@ async function openLesson(
   repetitions = '5',
 ): Promise<void> {
   await user.selectOptions(screen.getByLabelText('每种练习'), `${repetitions} 次`);
+  await user.selectOptions(screen.getByLabelText('翻页'), '点「下一题」翻页');
   await user.click(await screen.findByRole('button', { name: '开始练习：Things I want' }));
   await user.click(await screen.findByRole('button', { name: '开始替换练习' }));
 }
@@ -65,13 +66,16 @@ describe('RhythmPanel', () => {
     expect(screen.getByRole('status')).toHaveTextContent('正在听');
     say(speech, 'I want milk');
 
-    expect(await screen.findByText('正确')).toBeInTheDocument();
-    expect(screen.getByText('你的回答：I want milk')).toBeInTheDocument();
-    expect(posted).toEqual([{ cardKey: 'k:0:0', answer: 'I want milk', slow: false }]);
-    act(() => {
-      vi.advanceTimersByTime(1300);
+    await vi.waitFor(() => {
+      expect(posted).toHaveLength(1);
     });
-    expect(await screen.findByText('替换练习 第 2/5 次')).toBeInTheDocument();
+    expect(posted).toEqual([{ cardKey: 'k:0:0', answer: 'I want milk', slow: false }]);
+    await vi.waitFor(() => {
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(screen.getByText('替换练习 第 2/5 次')).toBeInTheDocument();
+    });
   });
 
   it('tells the learner to hurry and reports a late answer as slow', async () => {
@@ -142,7 +146,7 @@ describe('RhythmPanel', () => {
     expect(screen.getByLabelText('你的答案（回车提交）')).toBeInTheDocument();
   });
 
-  it('pauses on the feedback until the learner moves on', async () => {
+  it('waits for the learner in manual mode and can switch to automatic', async () => {
     route([]);
     const speech = fakeSpeech();
     const user = setup(speech.factory);
@@ -150,14 +154,20 @@ describe('RhythmPanel', () => {
     say(speech, 'I want milk');
     await screen.findByText('正确');
 
-    await user.click(screen.getByRole('button', { name: '暂停' }));
+    expect(screen.getByText('你的回答：I want milk')).toBeInTheDocument();
     act(() => {
       vi.advanceTimersByTime(5000);
     });
     expect(screen.getByText('替换练习 第 1/5 次')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '继续自动翻页' }));
     await user.click(screen.getByRole('button', { name: '下一题' }));
     expect(screen.getByText('替换练习 第 2/5 次')).toBeInTheDocument();
+    say(speech, 'I want milk');
+    await screen.findByText('正确');
+    await user.click(screen.getByRole('button', { name: '改为自动翻页' }));
+    act(() => {
+      vi.advanceTimersByTime(1300);
+    });
+    expect(await screen.findByText('替换练习 第 3/5 次')).toBeInTheDocument();
   });
 
   it('goes from substitution to the chained expansion drill and ends with a summary', async () => {
@@ -203,6 +213,46 @@ describe('RhythmPanel', () => {
     await user.click(await screen.findByRole('button', { name: '开始练习：Gone' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('这一课已经不存在了');
+  });
+
+  it('says the backend needs a restart when it has no lesson list', async () => {
+    stubFetchRoutes(() => ({ status: 404, body: {} }));
+    setup(null);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('docker compose restart backend');
+  });
+
+  it('labels lessons built from development material', async () => {
+    stubFetchRoutes((url) =>
+      url.startsWith('/api/practice/lessons?')
+        ? {
+            status: 200,
+            body: [
+              {
+                id: 'book',
+                title: 'Letters from a book',
+                level: 'ILR 2',
+                steps: [{ type: 'substitution', count: 20 }],
+                devOnly: true,
+              },
+            ],
+          }
+        : {
+            status: 200,
+            body: {
+              id: 'book',
+              title: 'Letters from a book',
+              level: 'ILR 2',
+              cards: [],
+              devOnly: true,
+            },
+          },
+    );
+    const user = setup(null);
+
+    expect(await screen.findByText('开发素材')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '开始练习：Letters from a book' }));
+    expect(await screen.findByRole('note')).toHaveTextContent('仅限开发环境');
   });
 
   it('shows when the lessons cannot be loaded', async () => {

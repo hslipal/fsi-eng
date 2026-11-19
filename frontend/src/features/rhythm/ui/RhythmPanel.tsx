@@ -20,6 +20,7 @@ export function RhythmPanel({ recognition }: PanelProps): ReactElement {
     limitSeconds: DEFAULT_LIMIT_SECONDS,
     repetitions: 20,
     mode: speech === null ? 'typing' : 'voice',
+    autoAdvance: true,
   });
 
   return (
@@ -133,8 +134,29 @@ function Settings({ settings, voiceAvailable, onChange }: SettingsProps): ReactE
           ))}
         </select>
       </label>
+      <PageTurn settings={settings} onChange={onChange} />
       <VoiceNote available={voiceAvailable} />
     </fieldset>
+  );
+}
+
+function PageTurn({
+  settings,
+  onChange,
+}: Pick<SettingsProps, 'settings' | 'onChange'>): ReactElement {
+  return (
+    <label className="field">
+      翻页
+      <select
+        value={settings.autoAdvance ? 'auto' : 'manual'}
+        onChange={(event) => {
+          onChange({ ...settings, autoAdvance: event.target.value === 'auto' });
+        }}
+      >
+        <option value="auto">答完自动翻页</option>
+        <option value="manual">点「下一题」翻页</option>
+      </select>
+    </label>
   );
 }
 
@@ -184,7 +206,10 @@ function LessonList({
           {lessons.value.map((lesson) => (
             <li key={lesson.id} className="library-item">
               <span className="library-title">{lesson.title}</span>
-              <span className="library-meta">{stepsText(lesson)}</span>
+              <span className="library-meta">
+                {stepsText(lesson)}
+                {lesson.devOnly ? <span className="dev-badge">开发素材</span> : null}
+              </span>
               <button
                 className="button"
                 type="button"

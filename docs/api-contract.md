@@ -96,10 +96,14 @@ Published content items that have pattern drills, for timed FSI practice.
 | title | string | |
 | level | string | |
 | steps | `{ type, count }[]` | drill types in practice order: `substitution`, `transformation`, `response`, `expansion` (types without items are left out) |
+| devOnly | boolean | built from copyrighted, unlicensed material in `content-dev/`; only with the `dev` profile, must be labelled as such |
+
+Practice (lessons and `/cards`) uses published items and, with the `dev` profile only, dev-only
+items from `content-dev/`. The library (`/api/content/items`) never lists dev-only items.
 
 ### GET /api/practice/lessons/{id}
 
-`{ id, title, level, cards }`: `cards` are cards (see above) of those four types, in the same
+`{ id, title, level, cards, devOnly }`: `cards` are cards (see above) of those four types, in the same
 order, each drill's items in content order. Unknown id or no pattern drills → `404`.
 
 Backend: `LessonSummaryResponse`, `LessonResponse`. Frontend: `LessonSummarySchema`,

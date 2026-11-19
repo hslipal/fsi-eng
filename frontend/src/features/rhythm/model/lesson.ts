@@ -33,6 +33,8 @@ export const LessonSummarySchema = z.object({
   title: z.string(),
   level: z.string(),
   steps: z.array(z.object({ type: z.enum(STEP_TYPES), count: z.number().int().positive() })),
+  /** Built from copyrighted, unlicensed books; only served by a backend in the dev profile. */
+  devOnly: z.boolean().default(false),
 });
 export type LessonSummary = z.infer<typeof LessonSummarySchema>;
 export const LessonSummaryListSchema = z.array(LessonSummarySchema);
@@ -52,6 +54,7 @@ export const LessonSchema = z.object({
   title: z.string(),
   level: z.string(),
   cards: z.array(LessonCardSchema),
+  devOnly: z.boolean().default(false),
 });
 export type Lesson = z.infer<typeof LessonSchema>;
 

@@ -52,6 +52,7 @@ export interface SessionData {
   readonly results: readonly TurnResult[];
   readonly mode: InputMode;
   readonly notice: string | null;
+  /** Feedback waits for "next" instead of moving on by itself; stays until switched back. */
   readonly paused: boolean;
 }
 
@@ -73,6 +74,7 @@ export function startSession(
   plan: readonly Turn[],
   limitSeconds: number,
   mode: InputMode,
+  autoAdvance = true,
 ): SessionData {
   return {
     plan,
@@ -82,7 +84,7 @@ export function startSession(
     results: [],
     mode,
     notice: null,
-    paused: false,
+    paused: !autoAdvance,
   };
 }
 
@@ -134,7 +136,7 @@ function advance(data: SessionData, now: number): SessionData {
   if (next === undefined) {
     return { ...data, index: data.plan.length, stage: { kind: 'done' } };
   }
-  const moved = { ...data, index: data.index + 1, paused: false };
+  const moved = { ...data, index: data.index + 1 };
   return next.type === current?.type
     ? { ...moved, stage: prompt(moved, now) }
     : { ...moved, stage: { kind: 'intro' } };

@@ -6,9 +6,11 @@ import java.util.List;
 /**
  * One content item practised the FSI way: its pattern drills in a fixed order (substitution,
  * transformation, response, expansion), each drill's items in content order. Translation and
- * reading questions are not part of a lesson; they stay in the review queue.
+ * reading questions are not part of a lesson; they stay in the review queue. {@code devOnly}: built
+ * from copyrighted, unlicensed material for development; never published.
  */
-public record Lesson(String id, String title, String level, List<PracticeItem> items) {
+public record Lesson(
+    String id, String title, String level, List<PracticeItem> items, boolean devOnly) {
 
   /** The drill types of a lesson, in the order they are practised. */
   public static final List<String> ORDER =
@@ -23,6 +25,11 @@ public record Lesson(String id, String title, String level, List<PracticeItem> i
             .filter(item -> ORDER.contains(item.type()))
             .sorted(Comparator.comparingInt(item -> ORDER.indexOf(item.type())))
             .toList();
+  }
+
+  /** A lesson from published material. */
+  public Lesson(String id, String title, String level, List<PracticeItem> items) {
+    this(id, title, level, items, false);
   }
 
   public boolean isEmpty() {
