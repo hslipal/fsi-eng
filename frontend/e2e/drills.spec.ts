@@ -35,6 +35,10 @@ test('a learner answers a substitution drill and sees feedback', async ({ page }
   }
 
   await page.goto('/');
+  await page
+    .getByRole('navigation', { name: '板块' })
+    .getByRole('button', { name: '句型操练' })
+    .click();
   const drills = page.getByRole('region', { name: '句型操练' });
   await expect(drills).toBeVisible();
   if (fullstack) {

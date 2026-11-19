@@ -30,6 +30,12 @@ class DrillJsonCodecTest {
                     new Drill.Item(
                         "Your price is too high.",
                         List.of("We were hoping for something closer to our budget.")))),
+            new Drill.PatternDrill(
+                DrillType.EXPANSION,
+                "Change the sentence with the cue.",
+                "There's a cup on the table.",
+                List.of(new Drill.Item("spoon", List.of("There's a spoon on the table."))),
+                true),
             new Drill.Reading(
                 "TRUE, FALSE or NOT GIVEN?",
                 "Rooftop gardens cool buildings.",

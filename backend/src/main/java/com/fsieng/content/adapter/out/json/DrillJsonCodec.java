@@ -63,7 +63,8 @@ public final class DrillJsonCodec {
         DrillType.fromCode(type),
         required(json.instruction(), "drill instruction"),
         json.model(),
-        items);
+        items,
+        Boolean.TRUE.equals(json.chained()));
   }
 
   private static Drill.Line toLine(DrillJson.LineJson line) {
@@ -102,7 +103,8 @@ public final class DrillJsonCodec {
               pattern.model(),
               null,
               pattern.items().stream().map(DrillJsonCodec::toJson).toList(),
-              null);
+              null,
+              pattern.chained() ? Boolean.TRUE : null);
       case Drill.Speaking speaking ->
           new DrillJson(
               SPEAKING,

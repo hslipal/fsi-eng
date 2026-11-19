@@ -1,6 +1,7 @@
 package com.fsieng.practice.adapter.in.web;
 
 import com.fsieng.practice.application.port.in.GetDueCardsUseCase;
+import com.fsieng.practice.application.port.in.GetLessonsUseCase;
 import com.fsieng.practice.application.port.in.SubmitAnswerUseCase;
 import com.fsieng.practice.domain.CardKey;
 import com.fsieng.practice.domain.LearnerId;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -29,10 +31,13 @@ public class PracticeController {
 
   private final GetDueCardsUseCase dueCards;
   private final SubmitAnswerUseCase submitAnswer;
+  private final GetLessonsUseCase lessons;
 
-  public PracticeController(GetDueCardsUseCase dueCards, SubmitAnswerUseCase submitAnswer) {
+  public PracticeController(
+      GetDueCardsUseCase dueCards, SubmitAnswerUseCase submitAnswer, GetLessonsUseCase lessons) {
     this.dueCards = dueCards;
     this.submitAnswer = submitAnswer;
+    this.lessons = lessons;
   }
 
   @GetMapping("/cards")
@@ -51,6 +56,19 @@ public class PracticeController {
       @Valid @RequestBody AnswerRequest request) {
     return FeedbackResponse.from(
         submitAnswer.submit(
-            new LearnerId(learner), new CardKey(request.cardKey()), request.answer()));
+            new LearnerId(learner),
+            new CardKey(request.cardKey()),
+            request.answer(),
+            request.isSlow()));
+  }
+
+  @GetMapping("/lessons")
+  public List<LessonSummaryResponse> lessons(@RequestParam("track") String track) {
+    return lessons.lessons(track).stream().map(LessonSummaryResponse::from).toList();
+  }
+
+  @GetMapping("/lessons/{id}")
+  public LessonResponse lesson(@PathVariable("id") String id) {
+    return LessonResponse.from(lessons.lesson(id));
   }
 }

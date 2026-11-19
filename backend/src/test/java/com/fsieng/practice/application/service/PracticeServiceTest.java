@@ -9,6 +9,8 @@ import com.fsieng.practice.domain.AnswerGrader;
 import com.fsieng.practice.domain.CardKey;
 import com.fsieng.practice.domain.Feedback;
 import com.fsieng.practice.domain.LearnerId;
+import com.fsieng.practice.domain.Lesson;
+import com.fsieng.practice.domain.LessonNotFoundException;
 import com.fsieng.practice.domain.PracticeItem;
 import com.fsieng.practice.domain.ReviewCard;
 import com.fsieng.practice.domain.UnknownCardException;
@@ -66,7 +68,21 @@ class PracticeServiceTest {
         public Optional<PracticeItem> find(CardKey key) {
           return items.stream().filter(item -> item.key().equals(key)).findFirst();
         }
+
+        @Override
+        public List<Lesson> lessonsFor(String track) {
+          return List.of(lessonOne, READING_ONLY);
+        }
+
+        @Override
+        public Optional<Lesson> lesson(String id) {
+          return lessonsFor("business").stream().filter(l -> l.id().equals(id)).findFirst();
+        }
       };
+
+  private final Lesson lessonOne = new Lesson("lesson-1", "Requesting a quote", "ILR 1+", items);
+  private static final Lesson READING_ONLY =
+      new Lesson("lesson-2", "Rooftop gardens", "Band 6", List.of(CHOICE));
 
   private final Map<CardKey, ReviewCard> stored = new HashMap<>();
 
@@ -147,5 +163,37 @@ class PracticeServiceTest {
         .isEqualTo(Verdict.CORRECT);
     assertThat(service.submit(LEARNER, CHOICE.key(), "TRUE").grade().verdict())
         .isEqualTo(Verdict.WRONG);
+  }
+
+  @Test
+  void aSlowCorrectAnswerStaysInItsBoxAndComesBackTomorrow() {
+    remember(1, Duration.ZERO);
+
+    Feedback feedback = service.submit(LEARNER, items.get(1).key(), "answer 1", true);
+
+    assertThat(feedback.grade().verdict()).isEqualTo(Verdict.CORRECT);
+    assertThat(feedback.card().box()).isEqualTo(1);
+    assertThat(feedback.card().dueAt()).isEqualTo(NOW.plus(Duration.ofDays(1)));
+  }
+
+  @Test
+  void aSlowWrongAnswerIsStillWrong() {
+    remember(1, Duration.ZERO);
+
+    assertThat(service.submit(LEARNER, items.get(1).key(), "no idea", true).card().box()).isZero();
+  }
+
+  @Test
+  void listsOnlyLessonsWithPatternDrills() {
+    assertThat(service.lessons("business")).containsExactly(lessonOne);
+  }
+
+  @Test
+  void findsALessonOrSaysThereIsNone() {
+    assertThat(service.lesson("lesson-1")).isEqualTo(lessonOne);
+    assertThatThrownBy(() -> service.lesson("lesson-2"))
+        .isInstanceOf(LessonNotFoundException.class)
+        .hasMessageContaining("lesson-2");
+    assertThatThrownBy(() -> service.lesson("missing")).isInstanceOf(LessonNotFoundException.class);
   }
 }

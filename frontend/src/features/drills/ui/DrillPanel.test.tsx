@@ -13,6 +13,7 @@ function card(index: number): Record<string, unknown> {
     passage: null,
     cue: index === 0 ? 'contract' : 'invoice',
     options: [],
+    base: null,
   };
 }
 
@@ -121,6 +122,7 @@ describe('DrillPanel', () => {
       passage: 'First paragraph.\n\nSecond paragraph.',
       cue: 'The first garden opened in 2010.',
       options: ['TRUE', 'FALSE', 'NOT GIVEN'],
+      base: null,
     };
     const fetchMock = stubPractice([reading], {
       status: 200,

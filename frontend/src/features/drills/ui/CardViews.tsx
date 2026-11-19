@@ -9,7 +9,10 @@ function Prompt({ card }: { readonly card: Card }): ReactElement {
         <span className="drill-title">{card.title}</span>
       </p>
       <p className="drill-instruction">{card.instruction}</p>
-      {card.model === null ? null : <p className="drill-model">例句：{card.model}</p>}
+      {card.model === null || card.base !== null ? null : (
+        <p className="drill-model">例句：{card.model}</p>
+      )}
+      {card.base === null ? null : <p className="drill-model">上一句：{card.base}</p>}
       {card.passage === null ? null : (
         <blockquote className="passage" aria-label="阅读文章">
           {card.passage.split('\n\n').map((paragraph) => (

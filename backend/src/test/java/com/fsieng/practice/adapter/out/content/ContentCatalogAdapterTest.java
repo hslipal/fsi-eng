@@ -45,8 +45,34 @@ class ContentCatalogAdapterTest {
                           List.of("FALSE"),
                           List.of("TRUE", "FALSE", "NOT GIVEN"))))));
 
+  private static final UUID TABLE_ID = new UUID(8L, 8L);
+
+  private static final ContentItem TABLE =
+      new ContentItem(
+          new ContentItemId(TABLE_ID),
+          Track.BUSINESS,
+          "Things on the table",
+          null,
+          new License.Generated("claude"),
+          "ILR 1",
+          "admin",
+          List.of(
+              new Drill.PatternDrill(
+                  DrillType.EXPANSION,
+                  "Change the sentence with the cue.",
+                  "There's a cup on the table.",
+                  List.of(
+                      new Drill.Item("spoon", List.of("There's a spoon on the table.")),
+                      new Drill.Item("on the chair", List.of("There's a spoon on the chair."))),
+                  true)));
+
   private final ContentCatalogAdapter adapter =
-      new ContentCatalogAdapter(track -> track == Track.IT ? List.of(STANDUP) : List.of());
+      new ContentCatalogAdapter(track ->
+          switch (track) {
+            case IT -> List.of(STANDUP);
+            case BUSINESS -> List.of(TABLE);
+            case IELTS -> List.of();
+          });
 
   @Test
   void turnsPatternAndReadingItemsIntoCardsAndSkipsDialogues() {
@@ -64,7 +90,8 @@ class ContentCatalogAdapterTest {
     assertThat(reading.type()).isEqualTo("reading");
     assertThat(reading.passage()).isEqualTo("The stand-up lasts ten minutes.");
     assertThat(reading.options()).containsExactly("TRUE", "FALSE", "NOT GIVEN");
-    assertThat(adapter.itemsFor("business")).isEmpty();
+    assertThat(first.base()).isNull();
+    assertThat(adapter.itemsFor("ielts")).isEmpty();
   }
 
   @Test
@@ -72,5 +99,29 @@ class ContentCatalogAdapterTest {
     assertThat(adapter.find(CardKey.of(ID, 1, 1)))
         .hasValueSatisfying(item -> assertThat(item.cue()).isEqualTo("reviewed a PR"));
     assertThat(adapter.find(CardKey.of(ID, 0, 0))).isEmpty();
+  }
+
+  @Test
+  void chainedItemsBuildOnTheModelAndThenOnThePreviousAnswer() {
+    List<PracticeItem> items = adapter.itemsFor("business");
+
+    assertThat(items)
+        .extracting(PracticeItem::base)
+        .containsExactly("There's a cup on the table.", "There's a spoon on the table.");
+  }
+
+  @Test
+  void everyPublishedItemIsALesson() {
+    assertThat(adapter.lessonsFor("it"))
+        .singleElement()
+        .satisfies(lesson -> {
+          assertThat(lesson.id()).isEqualTo(ID.toString());
+          assertThat(lesson.title()).isEqualTo("Daily stand-up");
+          assertThat(lesson.level()).isEqualTo("ILR 1+");
+          assertThat(lesson.items()).extracting(PracticeItem::type).containsOnly("substitution");
+        });
+    assertThat(adapter.lesson(TABLE_ID.toString()))
+        .hasValueSatisfying(lesson -> assertThat(lesson.count("expansion")).isEqualTo(2));
+    assertThat(adapter.lesson("missing")).isEmpty();
   }
 }

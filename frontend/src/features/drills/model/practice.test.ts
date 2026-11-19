@@ -11,6 +11,7 @@ describe('practice schemas', () => {
       passage: null,
       cue: 'Any blockers?',
       options: [],
+      base: null,
     };
     expect(CardSchema.safeParse(card).success).toBe(true);
   });

@@ -13,7 +13,8 @@ public record CardResponse(
     @Nullable String model,
     @Nullable String passage,
     String cue,
-    List<String> options) {
+    List<String> options,
+    @Nullable String base) {
 
   static CardResponse from(PracticeItem item) {
     return new CardResponse(
@@ -24,6 +25,7 @@ public record CardResponse(
         item.model(),
         item.passage(),
         item.cue(),
-        item.options());
+        item.options(),
+        item.base());
   }
 }

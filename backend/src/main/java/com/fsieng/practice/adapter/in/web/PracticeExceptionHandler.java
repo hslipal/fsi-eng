@@ -1,6 +1,7 @@
 package com.fsieng.practice.adapter.in.web;
 
 import com.fsieng.practice.domain.InvalidPracticeException;
+import com.fsieng.practice.domain.LessonNotFoundException;
 import com.fsieng.practice.domain.UnknownCardException;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
@@ -14,6 +15,11 @@ public class PracticeExceptionHandler {
 
   @ExceptionHandler(UnknownCardException.class)
   public ProblemDetail unknownCard(UnknownCardException exception) {
+    return problem(HttpStatus.NOT_FOUND, exception.getMessage());
+  }
+
+  @ExceptionHandler(LessonNotFoundException.class)
+  public ProblemDetail lessonNotFound(LessonNotFoundException exception) {
     return problem(HttpStatus.NOT_FOUND, exception.getMessage());
   }
 
