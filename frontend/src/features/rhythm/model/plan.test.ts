@@ -2,7 +2,15 @@ import type { LessonCard, StepType } from './lesson';
 import { buildPlan } from './plan';
 
 function card(type: StepType, cue: string, base: string | null = null): LessonCard {
-  return { cardKey: `${type}:${cue}`, type, instruction: 'Do it.', model: 'Model.', cue, base };
+  return {
+    cardKey: `${type}:${cue}`,
+    type,
+    instruction: 'Do it.',
+    model: 'Model.',
+    cue,
+    base,
+    answer: 'Answer.',
+  };
 }
 
 describe('buildPlan', () => {

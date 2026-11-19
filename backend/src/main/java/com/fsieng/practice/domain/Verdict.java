@@ -17,4 +17,14 @@ public enum Verdict {
   public String code() {
     return code;
   }
+
+  /** The verdict with this code ("correct", "close", "wrong"). */
+  public static Verdict fromCode(String code) {
+    for (Verdict verdict : values()) {
+      if (verdict.code.equals(code)) {
+        return verdict;
+      }
+    }
+    throw new InvalidPracticeException("unknown verdict: " + code);
+  }
 }

@@ -5,6 +5,7 @@ import com.fsieng.practice.application.port.in.GetLessonsUseCase;
 import com.fsieng.practice.application.port.in.SubmitAnswerUseCase;
 import com.fsieng.practice.domain.CardKey;
 import com.fsieng.practice.domain.LearnerId;
+import com.fsieng.practice.domain.Verdict;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -59,6 +60,18 @@ public class PracticeController {
             new LearnerId(learner),
             new CardKey(request.cardKey()),
             request.answer(),
+            request.isSlow()));
+  }
+
+  @PostMapping("/self-grades")
+  public FeedbackResponse selfGrade(
+      @RequestHeader(name = LEARNER_HEADER, defaultValue = DEFAULT_LEARNER) String learner,
+      @Valid @RequestBody SelfGradeRequest request) {
+    return FeedbackResponse.from(
+        submitAnswer.selfGrade(
+            new LearnerId(learner),
+            new CardKey(request.cardKey()),
+            Verdict.fromCode(request.verdict()),
             request.isSlow()));
   }
 

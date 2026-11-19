@@ -1,6 +1,7 @@
 import { getJson, postJson } from '@/shared/api/httpClient';
 import {
   FeedbackSchema,
+  type Verdict,
   LessonSchema,
   LessonSummaryListSchema,
   type Feedback,
@@ -26,4 +27,13 @@ export async function submitTimedAnswer(
   slow: boolean,
 ): Promise<Feedback> {
   return await postJson('/api/practice/answers', { cardKey, answer, slow }, FeedbackSchema);
+}
+
+/** The learner's own verdict after hearing the model answer. */
+export async function submitSelfGrade(
+  cardKey: string,
+  verdict: Verdict,
+  slow: boolean,
+): Promise<Feedback> {
+  return await postJson('/api/practice/self-grades', { cardKey, verdict, slow }, FeedbackSchema);
 }

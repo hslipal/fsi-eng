@@ -205,6 +205,13 @@ class PracticeApiIntegrationTest {
         .extracting(card -> String.valueOf(((Map<?, ?>) card).get("base")))
         .containsExactly(
             "null", "null", "There's a cup on the table.", "There's a spoon on the table.");
+    assertThat(cards)
+        .extracting(card -> String.valueOf(((Map<?, ?>) card).get("answer")))
+        .containsExactly(
+            "Could you send me the contract by Friday?",
+            "Could you send me the invoice by Friday?",
+            "There's a spoon on the table.",
+            "There's a spoon on the chair.");
   }
 
   @Test
@@ -242,5 +249,38 @@ class PracticeApiIntegrationTest {
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {}));
 
     assertThat(feedback).containsEntry("verdict", "correct").containsEntry("box", 0);
+  }
+
+  private int selfGrade(String cardKey, String verdict) {
+    return client
+        .post()
+        .uri("/api/practice/self-grades")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Map.of("cardKey", cardKey, "verdict", verdict))
+        .retrieve()
+        .onStatus(HttpStatusCode::isError, (_, _) -> {})
+        .toBodilessEntity()
+        .getStatusCode()
+        .value();
+  }
+
+  @Test
+  void aSelfGradeMovesTheCardOnAndRejectsNonsense() {
+    Map<String, Object> feedback =
+        Objects.requireNonNull(
+            client
+                .post()
+                .uri("/api/practice/self-grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("cardKey", CONTENT_ID + ":0:1", "verdict", "correct"))
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {}));
+
+    assertThat(feedback)
+        .containsEntry("verdict", "correct")
+        .containsEntry("expected", "Could you send me the invoice by Friday?")
+        .containsEntry("box", 1);
+    assertThat(selfGrade(CONTENT_ID + ":0:1", "perfect")).isEqualTo(400);
+    assertThat(selfGrade(CONTENT_ID + ":9:9", "correct")).isEqualTo(404);
   }
 }
