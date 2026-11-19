@@ -21,6 +21,7 @@ PROTECTED=(
   .gitattributes
   .github/workflows/ci.yml
   .github/workflows/claude-task.yml
+  .github/workflows/deepseek-smoke.yml
   .github/CODEOWNERS
   content-policy.json
   scripts/verify.sh
