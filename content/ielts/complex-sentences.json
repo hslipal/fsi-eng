@@ -20,20 +20,26 @@
           "answers": [
             "Although public transport is cheap, many people still drive.",
             "Many people still drive although public transport is cheap."
-          ]
+          ],
+          "translation": "虽然公共交通很便宜，但很多人仍然开车。",
+          "cueTranslation": "公共交通很便宜。很多人仍然开车。（although）"
         },
         {
           "cue": "Cities are growing. Housing is becoming expensive. (as)",
           "answers": [
             "As cities are growing, housing is becoming expensive.",
             "Housing is becoming expensive as cities are growing."
-          ]
+          ],
+          "translation": "随着城市扩张，住房越来越贵。",
+          "cueTranslation": "城市在扩张。住房越来越贵。（as）"
         },
         {
           "cue": "Remote work saves time. It can make people feel isolated. (while)",
           "answers": [
             "While remote work saves time, it can make people feel isolated."
-          ]
+          ],
+          "translation": "远程办公虽然节省时间，却可能让人感到孤立。",
+          "cueTranslation": "远程办公节省时间。它也会让人感到孤立。（while）"
         }
       ]
     }

@@ -74,6 +74,27 @@ describe('RhythmPanel', () => {
     expect(posted).toEqual([{ cardKey: 'k:0:0', answer: '', slow: false, verdict: 'correct' }]);
   });
 
+  it('shows the Chinese translation layer and hides it on click or with T', async () => {
+    route([]);
+    const user = setup(null);
+    await user.click(await screen.findByRole('button', { name: '开始练习：Things I want' }));
+
+    expect(await screen.findByText('我想要水。')).toBeInTheDocument();
+    const toggle = screen.getByRole('button', { name: '中文翻译（T）' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByText('我想要水。')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '开始替换练习' }));
+    await user.keyboard(' ');
+    expect(screen.getByText('I want milk.')).toBeInTheDocument();
+    expect(screen.queryByText('我想要牛奶。')).not.toBeInTheDocument();
+    await user.keyboard('t');
+    expect(screen.getByText('我想要牛奶。')).toBeInTheDocument();
+    expect(screen.getByText('我想要水。')).toBeInTheDocument();
+  });
+
   it('reveals the answer when the pause runs out and saves it as slow', async () => {
     const posted: Posted[] = [];
     route(posted);

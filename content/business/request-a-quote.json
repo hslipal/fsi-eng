@@ -41,21 +41,25 @@
           "cue": "the contract / Monday",
           "answers": [
             "Could you send me the contract by Monday?"
-          ]
+          ],
+          "translation": "能在周一前把合同发给我吗？"
         },
         {
           "cue": "the invoice / the end of the day",
           "answers": [
             "Could you send me the invoice by the end of the day?"
-          ]
+          ],
+          "translation": "能在今天下班前把发票发给我吗？"
         },
         {
           "cue": "the updated price list / noon tomorrow",
           "answers": [
             "Could you send me the updated price list by noon tomorrow?"
-          ]
+          ],
+          "translation": "能在明天中午前把最新价目表发给我吗？"
         }
-      ]
+      ],
+      "modelTranslation": "能在周五前把报价发给我吗？"
     }
   ]
 }

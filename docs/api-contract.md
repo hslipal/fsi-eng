@@ -114,9 +114,11 @@ items from `content-dev/`. The library (`/api/content/items`) never lists dev-on
 ### GET /api/practice/lessons/{id}
 
 `{ id, title, level, cards, devOnly }`: `cards` are `{ cardKey, type, instruction, model, cue,
-base, answer }` of those four types, in the same order, each drill's items in content order.
+base, answer, modelTranslation, baseTranslation, cueTranslation, answerTranslation }` of those four types, in the same order, each drill's items in content order.
 `answer` is the first accepted answer: in FSI tape style the learner hears it after answering
-aloud. Unknown id or no pattern drills → `404`.
+aloud. `modelTranslation`, `baseTranslation`, `cueTranslation` and `answerTranslation` are
+optional Chinese translations (null when missing), from the content fields `modelTranslation` (drill)
+and `translation` / `cueTranslation` (item); `tools/translate_content.py` fills in missing ones. Unknown id or no pattern drills → `404`.
 
 ### POST /api/practice/self-grades
 

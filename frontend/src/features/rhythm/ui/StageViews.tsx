@@ -1,11 +1,11 @@
-import { useState, type ReactElement } from 'react';
-import { STEP_LABELS, STEP_PURPOSE, VERDICT_LABELS, type Verdict } from '../model/lesson';
+import type { ReactElement } from 'react';
+import { STEP_LABELS, STEP_PURPOSE, type Verdict } from '../model/lesson';
 import type { Turn } from '../model/plan';
 import type { Stage } from '../model/rhythm';
+import { Translation } from './translation';
 
 type CueStage = Extract<Stage, { kind: 'cue' }>;
 type RevealStage = Extract<Stage, { kind: 'reveal' }>;
-type FeedbackStage = Extract<Stage, { kind: 'feedback' }>;
 
 export function Intro({
   turn,
@@ -22,6 +22,7 @@ export function Intro({
       <p>{STEP_PURPOSE[turn.type]}</p>
       <p className="drill-instruction">{turn.card.instruction}</p>
       {turn.card.model === null ? null : <p className="drill-model">基础句型：{turn.card.model}</p>}
+      <Translation text={turn.card.modelTranslation} />
       <div className="actions">
         <button className="button" type="button" onClick={onBegin}>
           开始{STEP_LABELS[turn.type]}
@@ -32,7 +33,7 @@ export function Intro({
 }
 
 export function Cue({ turn }: { readonly turn: Turn }): ReactElement {
-  const { base, model, cue } = turn.card;
+  const { base, model, cue, baseTranslation, modelTranslation, cueTranslation } = turn.card;
   const context = base ?? model;
   return (
     <>
@@ -41,15 +42,19 @@ export function Cue({ turn }: { readonly turn: Turn }): ReactElement {
           {base === null ? '基础句型' : '上一句'}：{context}
         </p>
       )}
+      {context === null ? null : (
+        <Translation text={base === null ? modelTranslation : baseTranslation} />
+      )}
       <p className="drill-cue">
         <span className="drill-cue-label">提示</span>
         <strong className="drill-slot">{cue}</strong>
       </p>
+      <Translation text={cueTranslation} />
     </>
   );
 }
 
-function Clock({
+export function Clock({
   limitSeconds,
   startedAt,
   running,
@@ -130,6 +135,7 @@ export function Reveal({
         </p>
       ) : null}
       <p className="rhythm-answer">{turn.card.answer}</p>
+      <Translation text={turn.card.answerTranslation} />
       <p className="rhythm-note">跟着读一遍，然后给自己打分。</p>
       <div className="actions">
         {MARKS.map((mark) => (
@@ -147,109 +153,6 @@ export function Reveal({
         ))}
         <button className="button button-quiet" type="button" onClick={onReadAgain}>
           再听一遍（R）
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export function TypedCue({
-  turn,
-  stage,
-  limitSeconds,
-  onTyped,
-  onAnswer,
-}: {
-  readonly turn: Turn;
-  readonly stage: CueStage;
-  readonly limitSeconds: number;
-  readonly onTyped: () => void;
-  readonly onAnswer: (text: string) => void;
-}): ReactElement {
-  const [text, setText] = useState('');
-  return (
-    <div className="rhythm-prompt">
-      <Clock
-        limitSeconds={limitSeconds}
-        startedAt={stage.startedAt}
-        running={stage.typedAt === null && !stage.late}
-      />
-      <Cue turn={turn} />
-      {stage.late ? (
-        <p className="rhythm-hurry" role="alert">
-          加快速度！要在 {limitSeconds} 秒内开始作答。
-        </p>
-      ) : null}
-      <form
-        aria-label="作答"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onAnswer(text);
-        }}
-      >
-        <label className="answer">
-          你的答案（回车提交）
-          <input
-            value={text}
-            autoComplete="off"
-            spellCheck={false}
-            autoFocus
-            onChange={(event) => {
-              if (stage.typedAt === null) {
-                onTyped();
-              }
-              setText(event.target.value);
-            }}
-          />
-        </label>
-      </form>
-    </div>
-  );
-}
-
-export function Checking({ answer }: { readonly answer: string }): ReactElement {
-  return (
-    <p className="status" role="status">
-      正在判分：{answer}
-    </p>
-  );
-}
-
-interface ResultProps {
-  readonly turn: Turn;
-  readonly stage: FeedbackStage;
-  readonly limitSeconds: number;
-  readonly paused: boolean;
-  readonly onNext: () => void;
-  readonly onTogglePause: () => void;
-}
-
-export function Result({
-  turn,
-  stage,
-  limitSeconds,
-  paused,
-  onNext,
-  onTogglePause,
-}: ResultProps): ReactElement {
-  const verdict = stage.feedback.verdict;
-  return (
-    <div className="rhythm-result">
-      <Cue turn={turn} />
-      <p role="status" className={`verdict verdict-${verdict}`}>
-        {VERDICT_LABELS[verdict]}
-        {stage.slow ? `，但超过了 ${String(limitSeconds)} 秒` : ''}
-      </p>
-      <p className="rhythm-said">你的回答：{stage.answer}</p>
-      {verdict === 'correct' ? null : (
-        <p className="expected">参考答案：{stage.feedback.expected}</p>
-      )}
-      <div className="actions">
-        <button className="button" type="button" onClick={onNext}>
-          下一题
-        </button>
-        <button className="button button-quiet" type="button" onClick={onTogglePause}>
-          {paused ? '改为自动翻页' : '暂停自动翻页'}
         </button>
       </div>
     </div>

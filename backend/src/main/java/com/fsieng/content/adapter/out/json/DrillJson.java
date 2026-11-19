@@ -14,7 +14,20 @@ public record DrillJson(
     @Nullable String passage,
     @Nullable List<ItemJson> items,
     @Nullable List<LineJson> lines,
-    @Nullable Boolean chained) {
+    @Nullable Boolean chained,
+    @Nullable String modelTranslation) {
+
+  /** A drill without a translation of its model sentence. */
+  public DrillJson(
+      @Nullable String type,
+      @Nullable String instruction,
+      @Nullable String model,
+      @Nullable String passage,
+      @Nullable List<ItemJson> items,
+      @Nullable List<LineJson> lines,
+      @Nullable Boolean chained) {
+    this(type, instruction, model, passage, items, lines, chained, null);
+  }
 
   /** A drill that is not chained. */
   public DrillJson(
@@ -37,7 +50,19 @@ public record DrillJson(
       @Nullable List<String> options,
       @Nullable Integer part,
       @Nullable String audio,
-      @Nullable Double seconds) {
+      @Nullable Double seconds,
+      @Nullable String translation,
+      @Nullable String cueTranslation) {
+
+    public ItemJson(
+        @Nullable String cue,
+        @Nullable List<String> answers,
+        @Nullable List<String> options,
+        @Nullable Integer part,
+        @Nullable String audio,
+        @Nullable Double seconds) {
+      this(cue, answers, options, part, audio, seconds, null, null);
+    }
 
     public ItemJson(
         @Nullable String cue, @Nullable List<String> answers, @Nullable List<String> options) {

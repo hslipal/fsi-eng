@@ -21,6 +21,8 @@ const LESSON = {
       cue: 'milk',
       base: null,
       answer: 'I want milk.',
+      modelTranslation: '我想要水。',
+      answerTranslation: '我想要牛奶。',
     },
     {
       ...SHARED,

@@ -64,7 +64,8 @@ public final class DrillJsonCodec {
         required(json.instruction(), "drill instruction"),
         json.model(),
         items,
-        Boolean.TRUE.equals(json.chained()));
+        Boolean.TRUE.equals(json.chained()),
+        json.modelTranslation());
   }
 
   private static Drill.Line toLine(DrillJson.LineJson line) {
@@ -83,7 +84,11 @@ public final class DrillJsonCodec {
   private static Drill.Item toItem(DrillJson.ItemJson item) {
     List<String> options = Objects.requireNonNullElse(item.options(), List.of());
     return new Drill.Item(
-        required(item.cue(), "drill cue"), required(item.answers(), "drill answers"), options);
+        required(item.cue(), "drill cue"),
+        required(item.answers(), "drill answers"),
+        options,
+        item.translation(),
+        item.cueTranslation());
   }
 
   static DrillJson toJson(Drill drill) {
@@ -104,7 +109,8 @@ public final class DrillJsonCodec {
               null,
               pattern.items().stream().map(DrillJsonCodec::toJson).toList(),
               null,
-              pattern.chained() ? Boolean.TRUE : null);
+              pattern.chained() ? Boolean.TRUE : null,
+              pattern.modelTranslation());
       case Drill.Speaking speaking ->
           new DrillJson(
               SPEAKING,
@@ -134,7 +140,15 @@ public final class DrillJsonCodec {
   }
 
   private static DrillJson.ItemJson toJson(Drill.Item item) {
-    return new DrillJson.ItemJson(item.cue(), item.answers(), item.options());
+    return new DrillJson.ItemJson(
+        item.cue(),
+        item.answers(),
+        item.options(),
+        null,
+        null,
+        null,
+        item.translation(),
+        item.cueTranslation());
   }
 
   private static <T> T required(@Nullable T value, String what) {

@@ -41,21 +41,25 @@
           "cue": "fixed the payment bug",
           "answers": [
             "Yesterday I fixed the payment bug."
-          ]
+          ],
+          "translation": "昨天我修复了支付的 bug。"
         },
         {
           "cue": "reviewed two pull requests",
           "answers": [
             "Yesterday I reviewed two pull requests."
-          ]
+          ],
+          "translation": "昨天我审查了两个 pull request。"
         },
         {
           "cue": "updated the API documentation",
           "answers": [
             "Yesterday I updated the API documentation."
-          ]
+          ],
+          "translation": "昨天我更新了 API 文档。"
         }
-      ]
+      ],
+      "modelTranslation": "昨天我完成了登录页面。"
     }
   ]
 }

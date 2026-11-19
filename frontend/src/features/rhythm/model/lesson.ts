@@ -48,6 +48,11 @@ export const LessonCardSchema = z.object({
   base: z.string().nullable(),
   /** The model answer, read aloud after the learner answers. */
   answer: z.string(),
+  /** Chinese translations, each optional (older servers send none). */
+  modelTranslation: z.string().nullable().default(null),
+  baseTranslation: z.string().nullable().default(null),
+  cueTranslation: z.string().nullable().default(null),
+  answerTranslation: z.string().nullable().default(null),
 });
 export type LessonCard = z.infer<typeof LessonCardSchema>;
 

@@ -10,6 +10,7 @@ import com.fsieng.content.domain.License;
 import com.fsieng.content.domain.Track;
 import com.fsieng.practice.domain.CardKey;
 import com.fsieng.practice.domain.PracticeItem;
+import com.fsieng.practice.domain.Translations;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -62,9 +63,15 @@ class ContentCatalogAdapterTest {
                   "Change the sentence with the cue.",
                   "There's a cup on the table.",
                   List.of(
-                      new Drill.Item("spoon", List.of("There's a spoon on the table.")),
+                      new Drill.Item(
+                          "spoon",
+                          List.of("There's a spoon on the table."),
+                          List.of(),
+                          "桌上有个勺子。",
+                          null),
                       new Drill.Item("on the chair", List.of("There's a spoon on the chair."))),
-                  true)));
+                  true,
+                  "桌上有个杯子。")));
 
   private final ContentCatalogAdapter adapter =
       new ContentCatalogAdapter(track ->
@@ -127,5 +134,16 @@ class ContentCatalogAdapterTest {
         });
     assertThat(adapter.lessonsFor("it")).singleElement().matches(lesson -> !lesson.devOnly());
     assertThat(adapter.lesson("missing")).isEmpty();
+  }
+
+  @Test
+  void carriesTheTranslationsOfEachItem() {
+    List<PracticeItem> items = adapter.itemsFor("business");
+
+    assertThat(items.getFirst().translations())
+        .isEqualTo(new Translations("桌上有个杯子。", "桌上有个杯子。", null, "桌上有个勺子。"));
+    assertThat(items.get(1).translations())
+        .isEqualTo(new Translations("桌上有个杯子。", "桌上有个勺子。", null, null));
+    assertThat(adapter.itemsFor("it").getFirst().translations()).isEqualTo(Translations.NONE);
   }
 }

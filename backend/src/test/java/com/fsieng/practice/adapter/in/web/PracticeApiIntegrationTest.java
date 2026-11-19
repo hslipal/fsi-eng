@@ -30,8 +30,9 @@ class PracticeApiIntegrationTest {
         "items": [{"cue": "contract", "answers": ["Could you send me the contract by Friday?"]},
                   {"cue": "invoice", "answers": ["Could you send me the invoice by Friday?"]}]},
        {"type": "expansion", "instruction": "Change the sentence with the cue.", "chained": true,
-        "model": "There's a cup on the table.",
-        "items": [{"cue": "spoon", "answers": ["There's a spoon on the table."]},
+        "model": "There's a cup on the table.", "modelTranslation": "桌上有个杯子。",
+        "items": [{"cue": "spoon", "answers": ["There's a spoon on the table."],
+                   "translation": "桌上有个勺子。"},
                   {"cue": "on the chair", "answers": ["There's a spoon on the chair."]}]}]
       """;
 
@@ -212,6 +213,12 @@ class PracticeApiIntegrationTest {
             "Could you send me the invoice by Friday?",
             "There's a spoon on the table.",
             "There's a spoon on the chair.");
+    assertThat(cards)
+        .extracting(card -> String.valueOf(((Map<?, ?>) card).get("baseTranslation")))
+        .containsExactly("null", "null", "桌上有个杯子。", "桌上有个勺子。");
+    assertThat(cards)
+        .extracting(card -> String.valueOf(((Map<?, ?>) card).get("answerTranslation")))
+        .containsExactly("null", "null", "桌上有个勺子。", "null");
   }
 
   @Test

@@ -20,14 +20,18 @@
           "answers": [
             "Good catch. I'll add a test for that.",
             "Sure, I will add a test for the empty list case."
-          ]
+          ],
+          "translation": "发现得好。我会为这种情况加一个测试。",
+          "cueTranslation": "能为空列表的情况加一个测试吗？"
         },
         {
           "cue": "This method is getting long. Can we split it?",
           "answers": [
             "Agreed. I will extract the validation into a separate method.",
             "Good point. I'll split it into two methods."
-          ]
+          ],
+          "translation": "同意。我会把校验逻辑提取成一个单独的方法。",
+          "cueTranslation": "这个方法越来越长了。我们能把它拆开吗？"
         }
       ]
     }
