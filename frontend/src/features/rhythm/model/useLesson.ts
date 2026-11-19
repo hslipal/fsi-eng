@@ -18,9 +18,15 @@ const OLD_BACKEND =
   '后端没有课程接口，多半还在运行旧版本。请运行 docker compose restart backend，等日志出现 Started 后刷新页面。';
 const LESSON_GONE = '这一课已经不存在了，请回到课程列表。';
 
+/** No answer from the backend: the dev proxy reports 5xx while it is starting or restarting. */
+const NO_BACKEND = '后端没有响应，可能还在启动。等后端日志出现 Started 后刷新页面。';
+
 export function describeError(error: unknown, notFound?: string): string {
   if (error instanceof HttpError && error.status === 404 && notFound !== undefined) {
     return notFound;
+  }
+  if ((error instanceof HttpError && error.status >= 500) || error instanceof TypeError) {
+    return NO_BACKEND;
   }
   return error instanceof Error ? error.message : '未知错误';
 }

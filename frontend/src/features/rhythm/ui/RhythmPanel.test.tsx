@@ -238,6 +238,22 @@ describe('RhythmPanel', () => {
     stubFetchRoutes(() => ({ status: 500, body: {} }));
     setup(null);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('课程加载失败');
+    expect(await screen.findByRole('alert')).toHaveTextContent('后端没有响应，可能还在启动');
+  });
+
+  it('says the backend is not answering when the network fails', async () => {
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
+    setup(null);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('后端没有响应');
+  });
+
+  it('passes other errors on as they are', async () => {
+    stubFetchRoutes(() => ({ status: 400, body: {} }));
+    setup(null);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'GET /api/practice/lessons?track=business failed',
+    );
   });
 });
