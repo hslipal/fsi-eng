@@ -32,7 +32,17 @@ services:
   backend:
     image: maven:3.9-eclipse-temurin-25
     working_dir: /workspace/backend
-    command: ['mvn', '-B', '-ntp', 'spring-boot:run', '-Dspring-boot.run.profiles=postgres,dev']
+    # Running the site needs no tests: maven.test.skip skips compiling them, which is slow on a
+    # Windows folder mounted into Docker. `./scripts/verify.sh backend` and CI still run them.
+    command:
+      [
+        'mvn',
+        '-B',
+        '-ntp',
+        '-Dmaven.test.skip=true',
+        'spring-boot:run',
+        '-Dspring-boot.run.profiles=postgres,dev',
+      ]
     depends_on:
       postgres:
         condition: service_healthy
