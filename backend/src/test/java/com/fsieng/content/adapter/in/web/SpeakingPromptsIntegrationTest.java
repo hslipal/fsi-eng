@@ -82,4 +82,30 @@ class SpeakingPromptsIntegrationTest {
         .isEqualTo("ID3-fake-sample");
     assertThat(missing).isEqualTo(404);
   }
+
+  @Test
+  void servesSubtitlesWithTheirTranslation() {
+    repository.deleteAll();
+    importContent.importAll();
+
+    Map<String, Object> subtitles =
+        Objects.requireNonNull(
+            client
+                .get()
+                .uri("/api/content/speaking-prompts/" + KEY + "/subtitles")
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {}));
+
+    List<?> lines = (List<?>) Objects.requireNonNull(subtitles.get("lines"));
+    assertThat(lines).hasSize(2);
+    Map<?, ?> first = (Map<?, ?>) lines.getFirst();
+    Map<?, ?> second = (Map<?, ?>) lines.get(1);
+    assertThat(first.get("start")).isEqualTo(0.0);
+    assertThat(first.get("end")).isEqualTo(2.5);
+    assertThat(first.get("text")).isEqualTo("Yes, I really enjoy my job.");
+    assertThat(first.get("translation")).isEqualTo("是的，我很喜欢我的工作。");
+    assertThat(second.get("text")).isEqualTo("I work with friendly people.");
+    assertThat(second.containsKey("translation")).isTrue();
+    assertThat(second.get("translation")).isNull();
+  }
 }

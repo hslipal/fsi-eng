@@ -39,6 +39,11 @@ public class ContentController {
         .body(audio.bytes());
   }
 
+  @GetMapping("/speaking-prompts/{key}/subtitles")
+  public SubtitlesResponse subtitles(@PathVariable("key") String key) {
+    return SubtitlesResponse.from(speakingPrompts.subtitles(key));
+  }
+
   @GetMapping("/items")
   public List<ContentItemResponse> items(@RequestParam("track") String track) {
     return listPublishedContent.listPublished(Track.fromCode(track)).stream()

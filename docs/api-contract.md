@@ -45,10 +45,20 @@ profile → `404`.
 Backend: `SpeakingPromptResponse`. Frontend: `SpeakingPromptSchema`
 (`frontend/src/features/ielts/model/assessment.ts`).
 
+### GET /api/content/speaking-prompts/{key}/subtitles
+
+Timed subtitles of the sample answer: `{ "lines": [{ "start": number, "end": number, "text":
+string, "translation": string | null }] }` (seconds; `translation` is Chinese). Read from
+`<recording>.subtitles.json` next to the recording, written by `tools/subtitle_speaking.py`
+(Whisper + DeepSeek). No subtitles, unknown question or no sample → `404`.
+
+Backend: `SubtitlesResponse`. Frontend: `SubtitlesSchema` (`frontend/src/features/ielts/model/subtitles.ts`).
+
 ## Practice
 
 Until login exists the learner is the `X-Learner-Id` header (default `local`). This is not
 authentication.
+
 
 ### GET /api/practice/cards?track={business|it|ielts}&limit={1-50, default 10}
 
