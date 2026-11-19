@@ -70,6 +70,10 @@ content_cases() {
     "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\", \"drills\": [{ \"type\": \"reading\", \"instruction\": \"Choose.\", \"passage\": \"Text.\", \"items\": [{ \"cue\": \"q\", \"options\": [\"TRUE\", \"FALSE\"], \"answers\": [\"MAYBE\"] }] }] }" \
     "$ROOT" "$check" "invalid-drill"
 
+  expect_caught "chained expansion drill without a starting sentence" "$ROOT/content/aiBad.json" \
+    "{ $ok, \"source\": { \"generator\": \"claude\" }, \"license\": { \"kind\": \"generated\" }, \"reviewed_by\": \"admin\", \"drills\": [{ \"type\": \"expansion\", \"chained\": true, \"instruction\": \"Change it.\", \"items\": [{ \"cue\": \"spoon\", \"answers\": [\"There's a spoon on the table.\"] }] }] }" \
+    "$ROOT" "$check" "invalid-drill"
+
   expect_caught "dev-only material switched on outside the dev profile" \
     "$ROOT/backend/src/main/resources/application-aibad.properties" \
     "fsi.content.include-dev-only=true" \
